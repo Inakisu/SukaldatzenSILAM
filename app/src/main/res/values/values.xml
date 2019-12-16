@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_web_client_id" translatable="false">340387937961-1q904hgcoj24hd1tnsmrdkbol5ur87p8.apps.googleusercontent.com</string>
+    <string name="firebase_database_url" translatable="false">https://sukaldatzen-31ccf.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">340387937961</string>
+    <string name="google_api_key" translatable="false">AIzaSyCqJo1pG8ZVQmSd2PWhjtcJT9g16imPluk</string>
+    <string name="google_app_id" translatable="false">1:340387937961:android:be3caab85bdab08f34b3b8</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCqJo1pG8ZVQmSd2PWhjtcJT9g16imPluk</string>
+    <string name="google_storage_bucket" translatable="false">sukaldatzen-31ccf.appspot.com</string>
+    <string name="project_id" translatable="false">sukaldatzen-31ccf</string>
+</resources>
