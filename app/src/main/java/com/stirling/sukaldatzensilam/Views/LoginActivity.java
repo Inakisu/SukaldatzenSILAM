@@ -29,6 +29,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.stirling.sukaldatzensilam.Main2Activity;
 import com.stirling.sukaldatzensilam.R;
 
 
@@ -156,7 +157,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
                                     Intent intent = new Intent(LoginActivity.this,
-                                            MainUserActivity.class);
+                                            Main2Activity.class);
                                     startActivity(intent);
                                     finish();
                                 }

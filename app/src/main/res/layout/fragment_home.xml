@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imgTupper2"
+        android:layout_width="343dp"
+        android:layout_height="160dp"
+        android:layout_margin="30dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/vacio"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_home" />
+
+    <TextView
+        android:id="@+id/text_home"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.libRG.CustomTextView
+        android:id="@+id/temperatureIndicator"
+        android:layout_width="175dp"
+        android:layout_height="175dp"
+        android:layout_margin="30dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:textColor="#ffffffff"
+        android:textSize="40dp"
+        android:textStyle="bold"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgTupper2"
+        app:lib_enable_ripple_effect="true"
+        app:lib_setRadius="50dp"
+        app:lib_setRippleColor="@color/colorPrimaryDark"
+        app:lib_setRoundedBGColor="#ffe0e0e0"
+        app:lib_setRoundedView="true"
+        app:lib_setShape="oval" />
+
+    <org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
+        android:id="@+id/alarmTemperatureSeekbar"
+        android:layout_width="257dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:layout_weight="9"
+        app:dsb_allowTrackClickToDrag="false"
+        app:dsb_indicatorColor="#039BE5"
+        app:dsb_max="80"
+        app:dsb_min="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/temperatureIndicator" />
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="57dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="Tª Máx."
+        android:textColor="@android:color/white"
+        app:layout_constraintEnd_toStartOf="@+id/alarmTemperatureSeekbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/temperatureIndicator" />
+</androidx.constraintlayout.widget.ConstraintLayout>
