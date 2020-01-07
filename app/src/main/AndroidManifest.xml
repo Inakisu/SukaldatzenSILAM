@@ -35,9 +35,6 @@
         <activity
             android:name=".Views.ResetPasswordActivity"
             android:label="@string/title_activity_reset_password" />
-        <activity
-            android:name=".Views.MainUserActivity"
-            android:theme="@style/AppTheme.NavDrawer" />
     </application>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.INTERNET" />
