@@ -2,9 +2,6 @@ package com.stirling.sukaldatzensilam;
 
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import android.os.Handler;
 import android.text.Html;
 import android.view.View;
@@ -29,6 +26,10 @@ import butterknife.BindView;
 
 public class Main2Activity extends AppCompatActivity {
 
+    private AppBarConfiguration mAppBarConfiguration;
+    private int NUM_OF_COUNT;
+    private boolean timelapseRunning = false;
+
     @BindView(R.id.bSetAlarm) TextView bSetTemperatureAlarm;
     @BindView(R.id.temperatureThreshold) TextView temperatureThreshold;
     @BindView(R.id.bSetTime) TextView bSetTimeAlarm;
@@ -38,11 +39,6 @@ public class Main2Activity extends AppCompatActivity {
     @BindView(R.id.alarmTemperatureSeekbar) org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
             seekBarTemp;
     @BindView(R.id.timeAlarm) TextView timeAlarm;
-
-    private Handler handler = new Handler();
-    private AppBarConfiguration mAppBarConfiguration;
-    private int NUM_OF_COUNT;
-    private boolean timelapseRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,14 +63,17 @@ public class Main2Activity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navigationView, navController);
 
         //Set temperature alarm click listener
-        bSetTemperatureAlarm.setOnClickListener(new View.OnClickListener()
-        {
+        bSetTemperatureAlarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
             {
 //                currentCazuela.setTemperatureAlarm(seekBarTemp.getProgress());
-                temperatureThreshold.setText(Html.fromHtml("<b>Alarma límite Tª: </b>" +
-                        seekBarTemp.getProgress() + "ºC"));
+                if(seekBarTemp.getProgress()<1){
+
+                }else {
+                    temperatureThreshold.setText(Html.fromHtml("<b>Alarma límite Tª: </b>" +
+                            seekBarTemp.getProgress() + "ºC"));
+                }
             }
         });
 
@@ -91,20 +90,18 @@ public class Main2Activity extends AppCompatActivity {
             }
         });
 
-
-
     }
 
-//    Cosas del temporizador-----0-----------------
+//    Cosas del temporizador -----0-----------------
     private void runTimer(int tiempo) {
         if (!timelapseRunning) {
-            timelapseRunning=true;
+            timelapseRunning = true;
         } else {
             timelapseRunning = false;
 
         }
-        if(NUM_OF_COUNT==0){
-            NUM_OF_COUNT=15;
+        if(NUM_OF_COUNT == 0){
+            NUM_OF_COUNT = tiempo;
         }
         final Handler handler = new Handler();
         handler.post(new Runnable() {
@@ -113,7 +110,7 @@ public class Main2Activity extends AppCompatActivity {
                 timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> "
                         + NUM_OF_COUNT ) + "min.");
                 if (!timelapseRunning && NUM_OF_COUNT>0) {
-                    NUM_OF_COUNT--;
+                    NUM_OF_COUNT --;
                 }
                 handler.postDelayed(this, 1000);
             }

@@ -30,6 +30,7 @@
         android:id="@+id/temperatureIndicator"
         android:layout_width="175dp"
         android:layout_height="175dp"
+        android:layout_marginTop="5dp"
         android:gravity="center"
         android:padding="10dp"
         android:textColor="#ffffffff"
@@ -50,6 +51,7 @@
         android:id="@+id/alarmLayout"
         android:layout_width="404dp"
         android:layout_height="196dp"
+        android:layout_marginTop="1dp"
         android:orientation="vertical"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
@@ -109,8 +111,6 @@
                         app:dsb_allowTrackClickToDrag="false"
                         app:dsb_max="180"
                         app:dsb_min="0" />
-
-
                 </LinearLayout>
 
                 <TextView
@@ -203,6 +203,8 @@
         android:layout_width="409dp"
         android:layout_height="48dp"
         android:layout_alignParentBottom="true"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="1dp"
         android:layout_marginEnd="2dp"
         android:layout_weight="1.5"
         android:background="@color/colorPrimary"
