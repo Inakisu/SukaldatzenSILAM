@@ -8,8 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
-
-import androidx.core.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat;
 
 import com.stirling.sukaldatzensilam.R;
 

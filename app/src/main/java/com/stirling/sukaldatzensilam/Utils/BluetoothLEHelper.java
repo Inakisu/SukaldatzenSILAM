@@ -10,11 +10,14 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.stirling.sukaldatzensilam.Models.BluetoothLE;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +29,7 @@ public class BluetoothLEHelper {
     private ArrayList<BluetoothLE> aDevices     = new ArrayList<>();
 
     private BleCallback bleCallback;
-    private BluetoothGatt mBluetoothGatt;
+    private BluetoothGatt    mBluetoothGatt;
     private BluetoothAdapter mBluetoothAdapter;
 
     private static final int STATE_DISCONNECTED = 0;
