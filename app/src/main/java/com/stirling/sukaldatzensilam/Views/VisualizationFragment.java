@@ -93,25 +93,37 @@ public class VisualizationFragment extends Fragment {
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
 
-        //Set temperature alarm click listener
+        //Boton poner alamra temperatura
         bSetTemperatureAlarm.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-//              currentCazuela.setTemperatureAlarm(seekBarTemp.getProgress());
-                temperatureThreshold.setText(Html.fromHtml("<b>Temperature limit: </b>" +
-                        seekBarTemp.getProgress() + "ºC"));
+                if(bSetTemperatureAlarm.getText().equals("Activar")){ //Activar alarma
+                    temperatureThreshold.setText(Html.fromHtml("<b>Temperatura límite: </b>" +
+                            seekBarTemp.getProgress() + "ºC"));
+                    bSetTemperatureAlarm.setText("Desactivar");
+                }else{ //Desactivar alarma
+                    temperatureThreshold.setText(Html.fromHtml("<b> </b>"));
+                    bSetTemperatureAlarm.setText("Activar");
+                }
             }
         });
-        //Set temperature alarm click listener
+        //Boton poner temporizador
         bSetTimeAlarm.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-//                currentCazuela.setTimeAlarm(seekBarTime.getProgress());
-                timeAlarm.setText(Html.fromHtml("<b>Time remaining:</b> " +
+                if(bSetTimeAlarm.getText().equals("Activar")){ //Activar temporizador
+                    timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
+                            seekBarTime.getProgress() + "min."));
+                    bSetTimeAlarm.setText("Desactivar");
+                }else{ //Desactivar temporizador
+                    bSetTimeAlarm.setText("Activar");
+                    timeAlarm.setText(Html.fromHtml(" "));
+                }
+                timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
                         seekBarTime.getProgress() + "min."));
             }
         });
