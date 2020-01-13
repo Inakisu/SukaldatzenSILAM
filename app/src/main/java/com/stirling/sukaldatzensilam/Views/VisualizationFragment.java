@@ -3,6 +3,8 @@ package com.stirling.sukaldatzensilam.Views;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,8 +35,14 @@ public class VisualizationFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private int NUM_OF_COUNT;
-    private boolean timelapseRunning = false;
+    private boolean seguir = false;
+    private boolean rCorriendo = false;
     private float temp;
+    private float mil = 0;
+    private Handler handler;
+    private int minutosTemp = 0;
+    private long millisCounter = 0;
+    Runnable runnable;
 
     private int position = -1;
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
@@ -115,19 +123,67 @@ public class VisualizationFragment extends Fragment {
             @Override
             public void onClick(View v)
             {
-                if(bSetTimeAlarm.getText().equals("Activar")){ //Activar temporizador
+                if(bSetTimeAlarm.getText().toString().equals("Activar")){ //Activar temporizador
                     timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
                             seekBarTime.getProgress() + "min."));
+                    if(!rCorriendo){
+                        seguir = true;
+                    }else{
+                        pararTimer();
+                    }
+                    minutosTemp = seekBarTime.getProgress();
                     bSetTimeAlarm.setText("Desactivar");
+                    seguir = true;
+                    arrancarTimer();
                 }else{ //Desactivar temporizador
+                    pararTimer();
                     bSetTimeAlarm.setText("Activar");
+                    seguir = false;
                     timeAlarm.setText(Html.fromHtml(" "));
                 }
                 timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
                         seekBarTime.getProgress() + "min."));
+
             }
         });
 
+    }
+    //Encender contador que funciona si 'true' durante X minutos establecidos en var. minutosTemp.
+    public void arrancarTimer(){
+        millisCounter = minutosTemp*60*1000; //Trabajamos con millisegundos
+//        handler = new Handler();
+//        seguir = true;
+       /* runnable = new Runnable() {
+            public void run(){
+                handler.postDelayed(this, 1000);
+
+                mil = 0;
+                try {
+                    if(millisCounter <=1000){
+                            pararTimer();
+                    }else{
+                        if(seguir){
+                            millisCounter = millisCounter - 1000;
+                            mil = millisCounter /60 / 1000;
+                            seekBarTime.setProgress(Math.round(mil));
+                        }else{
+                            pararTimer();
+                        }
+                    }
+
+                    timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
+                            Math.round(mil) + "min."));
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        };*/
+       mil = 0;
+        new unCountDown(millisCounter, 1000).start();
+    }
+    //Detener el timer
+    public void pararTimer(){
     }
     //Actualiza el color del círculo en el que se muestra la temperatura
     public void actualizarColor(){
@@ -177,4 +233,37 @@ public class VisualizationFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+    public class unCountDown extends CountDownTimer {
+
+        public unCountDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            seekBarTime.setMax((int) millisInFuture);
+        }
+
+        @Override
+        public void onFinish() {
+            timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
+                     "Finalizado"));
+            seekBarTime.setMax(30);
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            if(!seguir){
+                this.cancel();
+                seekBarTime.setMax(30);
+            }
+            millisCounter = millisCounter - 1000;
+            mil = millisCounter /60 / 1000;
+            timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
+                    Math.round(mil) + "min."));
+            seekBarTime.setProgress(Math.round(millisUntilFinished));
+            long timeRemaining = millisUntilFinished;
+            seekBarTime.setProgress((int) (timeRemaining));
+            //Log.i(TAG, "Time tick: " + millisUntilFinished);
+        }
+    }
 }
+
+

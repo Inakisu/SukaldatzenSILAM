@@ -92,7 +92,7 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="9"
                         app:dsb_allowTrackClickToDrag="false"
-                        app:dsb_max="180"
+                        app:dsb_max="80"
                         app:dsb_min="0" />
                 </LinearLayout>
 
@@ -160,7 +160,7 @@
                         android:layout_marginRight="20dp"
                         android:layout_weight="9"
                         app:dsb_allowTrackClickToDrag="false"
-                        app:dsb_max="60"
+                        app:dsb_max="30"
                         app:dsb_min="0" />
 
 
