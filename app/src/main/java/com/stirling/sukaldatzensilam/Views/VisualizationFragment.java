@@ -1,6 +1,11 @@
 package com.stirling.sukaldatzensilam.Views;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -8,6 +13,8 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +25,9 @@ import android.widget.TextView;
 
 import com.libRG.CustomTextView;
 import com.stirling.sukaldatzensilam.R;
+import com.stirling.sukaldatzensilam.Utils.Notifications;
+
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -41,6 +51,8 @@ public class VisualizationFragment extends Fragment {
     private float mil = 0;
     private Handler handler;
     private int minutosTemp = 0;
+    public static final String CHANNEL_ID = "CID_1";
+    public static final int NOTIFICATION_ID = 1;
     private long millisCounter = 0;
     Runnable runnable;
 
@@ -246,6 +258,33 @@ public class VisualizationFragment extends Fragment {
             timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
                      "Finalizado"));
             seekBarTime.setMax(30);
+
+            /*//Este intent se abrirá cuando se pulse la notificación
+            Intent intentNotif = new Intent(getActivity(), MainUserActivity.class);
+            PendingIntent pendingintent = PendingIntent
+                    .getActivity(getActivity(), 1001, intentNotif, 0);
+            //Notificación
+            NotificationCompat.Builder builder = new NotificationCompat
+                    .Builder(getActivity(), CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher_iconolla_foreground_round)
+                    .setContentTitle("SukaldatzenSILAM")
+                    .setContentText("Temporizador finalizado.")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setSound(RingtoneManager.getDefaultUri((RingtoneManager.TYPE_ALARM)))
+                    .setVibrate(new long[]{ 500,500,500,500})
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setContentIntent(pendingintent);
+
+            //Construimos notificación con las características del builder
+            Notification notification = builder.build();
+
+            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat
+                    .from(getActivity());
+            //Disparamos notificación
+            notificationManagerCompat.notify(NOTIFICATION_ID, notification);*/
+
+            Notifications.show(getActivity(), VisualizationFragment.class,
+                    "Temporizador tupper", "El temporizador ha finalizado.");
         }
 
         @Override

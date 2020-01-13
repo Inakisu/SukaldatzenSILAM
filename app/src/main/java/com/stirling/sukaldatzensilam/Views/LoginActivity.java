@@ -1,6 +1,7 @@
 package com.stirling.sukaldatzensilam.Views;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -40,6 +41,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        //Instanciamos las preferencias compartidas y el editor
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref",
+                0); // 0 - modo privad
+        SharedPreferences.Editor editor = pref.edit();
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -142,8 +148,8 @@ public class LoginActivity extends AppCompatActivity {
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 } else {
-
-
+//todo  que no se cierre la sesión
+       //                             editor.putLong("user", )
                                     Intent intent = new Intent(LoginActivity.this,
                                             MainUserActivity.class);
                                     startActivity(intent);

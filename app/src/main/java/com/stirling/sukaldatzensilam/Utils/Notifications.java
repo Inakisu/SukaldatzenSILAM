@@ -7,6 +7,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
@@ -30,12 +31,14 @@ public class Notifications
                     PendingIntent.FLAG_ONE_SHOT);
             NotificationCompat.Builder noBuilder = new NotificationCompat.Builder(ctx, "")
                     .setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(),
-                            R.mipmap.ic_launcher))
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                            R.mipmap.ic_launcher_iconolla_foreground))
+                    .setSmallIcon(R.mipmap.ic_launcher_iconolla_foreground)
                     .setContentTitle(title)
                     .setContentText(message)
                     .setTicker(title + " " + message)
+                    .setVibrate(new long[]{ 500,500,250,500,500,500,250})
                     .setAutoCancel(true)
+                    .setSound(RingtoneManager.getDefaultUri((RingtoneManager.TYPE_ALARM)))
                     .setContentIntent(pendingIntent);
 
             notificationManager.notify(0, noBuilder.build()); //0 = ID of notification
