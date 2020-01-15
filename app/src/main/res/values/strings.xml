@@ -37,4 +37,7 @@
     <string name="title_activity_aaaaaaaaaaa">aaaaaaaaaaa</string>
     <string name="title_activity_ajustes">activity_ajustes</string>
     <string name="title_upload_quality">uploadQuality</string>
+    <string name="SERVICE_UUID_VALORTEMP">uuid del service</string>
+    <string name="CHARACTERISTIC_UUID_VALORTEMP">uuid de la characteristic</string>
+
 </resources>

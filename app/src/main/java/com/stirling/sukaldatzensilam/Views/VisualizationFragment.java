@@ -77,6 +77,10 @@ public class VisualizationFragment extends Fragment {
     private ArrayList<String> arListEncont;
     private ArrayList<BluetoothLE> arBLEEncont;
 
+    private String serviceUUID = getActivity().getResources()
+            .getString(R.string.SERVICE_UUID_VALORTEMP);
+    private String charUUID = getActivity().getResources()
+            .getString(R.string.CHARACTERISTIC_UUID_VALORTEMP);
 
     private int position = -1;
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
@@ -179,7 +183,8 @@ public class VisualizationFragment extends Fragment {
                 //Intentar obtener temperatura grabada en característica BLE
                 String tempObtenida = Arrays.toString(characteristic.getValue());
                 //Probamos a escribirla por terminal
-                System.out.println("=======> Valor obtenido BLE: " + tempObtenida);
+                System.out.println("1=======> Valor obtenido BLE: " + tempObtenida);
+                temp = Integer.parseInt(tempObtenida);
             }
 
 
@@ -303,6 +308,7 @@ public class VisualizationFragment extends Fragment {
                 busquedaBT();
             } else {
                 if(checkIfBleIsConnected(ble)){
+                    ble.read(serviceUUID,charUUID);
 
                 }
             }

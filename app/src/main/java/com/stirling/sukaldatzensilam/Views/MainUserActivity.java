@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.stirling.sukaldatzensilam.R;
+import com.stirling.sukaldatzensilam.Utils.BluetoothLEHelper;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -39,6 +40,10 @@ public class MainUserActivity extends AppCompatActivity {
     private SubMenu modulos;
     private String correoUsu = "Correo del usuario";
     private FirebaseAuth auth;
+    private String macbt;
+    private int tempObtBT;
+
+    BluetoothLEHelper ble;
 
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.drawer_layout) DrawerLayout drawer;
