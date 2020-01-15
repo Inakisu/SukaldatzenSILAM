@@ -39,6 +39,7 @@ public class Notifications
                     .setVibrate(new long[]{ 500,500,250,500,500,500,250})
                     .setAutoCancel(true)
                     .setSound(RingtoneManager.getDefaultUri((RingtoneManager.TYPE_ALARM)))
+                    .setLights(0xff0000ff, 100,100)
                     .setContentIntent(pendingIntent);
 
             notificationManager.notify(0, noBuilder.build()); //0 = ID of notification

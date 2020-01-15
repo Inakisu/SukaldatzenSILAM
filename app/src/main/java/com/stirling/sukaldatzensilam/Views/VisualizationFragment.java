@@ -51,8 +51,6 @@ public class VisualizationFragment extends Fragment {
     private float mil = 0;
     private Handler handler;
     private int minutosTemp = 0;
-    public static final String CHANNEL_ID = "CID_1";
-    public static final int NOTIFICATION_ID = 1;
     private long millisCounter = 0;
     Runnable runnable;
 
