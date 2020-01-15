@@ -57,7 +57,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class BluetoothActivity extends AppCompatActivity {
 
-    SharedPreferences preferences;
+    SharedPreferences sharedPreferences;
 
     BluetoothLEHelper ble;
 
@@ -109,7 +109,7 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        preferences = getBaseContext().getSharedPreferences("preferencias",
+        sharedPreferences = getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
         setContentView(R.layout.activity_bluetooth);
         relativeLayout = (RelativeLayout) findViewById(R.id.relativeLayout);
@@ -260,6 +260,10 @@ public class BluetoothActivity extends AppCompatActivity {
                     Toast.makeText(BluetoothActivity.this,
                             "No se ha podido conectar con el dispositivo",
                             Toast.LENGTH_SHORT).show();
+                }else{
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("macbt", selDevice.getAddress());
+                    editor.commit();
                 }
 
             }
