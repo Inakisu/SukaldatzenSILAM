@@ -1,6 +1,7 @@
 package com.stirling.sukaldatzensilam.Views;
 
 import android.Manifest;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -15,6 +16,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -65,7 +68,6 @@ public class BluetoothActivity extends AppCompatActivity {
 
     private BluetoothSocket btsocker;
 
-    private final UUID my_UUID = UUID.fromString("");
     private final static int REQUEST_ENABLE_BT = 1;
     private ListView dispEncontrados;
     private ListView dispVinculados;
@@ -106,6 +108,28 @@ public class BluetoothActivity extends AppCompatActivity {
     FirebaseAuth auth;
     private String email;
 
+    /*protected BluetoothActivity(Parcel in) {
+        arListEncont = in.createStringArrayList();
+        arListEmparej = in.createStringArrayList();
+        selDevice = in.readParcelable(BluetoothDevice.class.getClassLoader());
+        queryJson = in.readString();
+        mElasticSearchPassword = in.readString();
+        tempObtenida = in.readString();
+        email = in.readString();
+    }*/
+
+    /*public static final Parcelable.Creator<BluetoothActivity> CREATOR = new Parcelable.Creator<BluetoothActivity>() {
+        @Override
+        public BluetoothActivity createFromParcel(Parcel in) {
+            return new BluetoothActivity(in);
+        }
+
+        @Override
+        public BluetoothActivity[] newArray(int size) {
+            return new BluetoothActivity[size];
+        }
+    };*/
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,8 +142,7 @@ public class BluetoothActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         email = auth.getCurrentUser().getEmail();
-
-        //VErificamos que el Bluetooth esté encendido, y si no lo está, pedimos encenderlo
+        //Verificamos que el Bluetooth esté encendido, y si no lo está, pedimos encenderlo
         if(adapter == null || !adapter.isEnabled()){
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
@@ -204,12 +227,14 @@ public class BluetoothActivity extends AppCompatActivity {
                 if(ble.isReadyForScan()){
                     Handler mHandler = new Handler();
                     //comienza el escaneo
+                    progressBar2.setVisibility(View.VISIBLE);
+                    botonBuscar.setVisibility(View.GONE);
                     ble.scanLeDevice(true);
                     //Cuando finaliza el escaneo;
                     mHandler.postDelayed(() -> {
                        progressBar2.setVisibility(View.GONE);
                        botonBuscar.setVisibility(View.VISIBLE);
-                       //Obtenemos lista de dispositvios encontrados
+                       //Obtenemos lista de dispositivos encontrados
                        arBLEEncont = ble.getListDevices();
                        //Convertimos a String para poder mostrarlos en la ListView de disp. encont.
                         deDeviceAString(arBLEEncont);
@@ -264,6 +289,10 @@ public class BluetoothActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("macbt", selDevice.getAddress());
                     editor.commit();
+
+                    /*Intent intentA = new Intent (dispEncontrados.getContext(), MainUserActivity.class);
+                    intentA.putExtra("btdevice", selDevice);
+                    startActivity(intentA);*/
                 }
 
             }
@@ -355,4 +384,17 @@ public class BluetoothActivity extends AppCompatActivity {
             return false;
         }
     }
+
+
+
+    /*@Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringList(arListEncont);
+        dest.writeStringList(arListEmparej);
+        dest.writeParcelable(selDevice, flags);
+        dest.writeString(queryJson);
+        dest.writeString(mElasticSearchPassword);
+        dest.writeString(tempObtenida);
+        dest.writeString(email);
+    }*/
 }

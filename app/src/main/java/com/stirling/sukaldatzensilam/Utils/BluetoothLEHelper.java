@@ -127,6 +127,7 @@ public class BluetoothLEHelper {
 
     }
 
+
     public void disconnect(){
         if (mBluetoothGatt != null && isConnected()) {
             mBluetoothGatt.close();
@@ -178,16 +179,20 @@ public class BluetoothLEHelper {
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.i("BluetoothLEHelper", "Attempting to start service discovery: "
-                            + mBluetoothGatt.discoverServices());
+//                    Log.i("BluetoothLEHelper", "Attempting to start service discovery: "
+//                            + mBluetoothGatt.discoverServices());
                     mConnectionState = STATE_CONNECTED;
                 }
 
                 if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     mConnectionState = STATE_DISCONNECTED;
                 }
+                try{
+                    //bleCallback.onBleConnectionStateChange(gatt, status, newState);
 
-                bleCallback.onBleConnectionStateChange(gatt, status, newState);
+                }catch (Exception e){
+                    Log.e("bleCallback.onBleConn...", "El error: " + e);
+                }
             }
 
             @Override

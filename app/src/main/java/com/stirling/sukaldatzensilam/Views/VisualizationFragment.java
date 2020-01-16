@@ -3,6 +3,7 @@ package com.stirling.sukaldatzensilam.Views;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -73,14 +74,13 @@ public class VisualizationFragment extends Fragment {
     BluetoothDevice selDevice;
     private BleCallback bleCallback;
     BluetoothLEHelper ble;
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     private ArrayList<String> arListEncont;
     private ArrayList<BluetoothLE> arBLEEncont;
 
-    private String serviceUUID = getActivity().getResources()
-            .getString(R.string.SERVICE_UUID_VALORTEMP);
-    private String charUUID = getActivity().getResources()
-            .getString(R.string.CHARACTERISTIC_UUID_VALORTEMP);
+    private String serviceUUID = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
+    private String charUUID = "BEB5483E-36E1-4688-B7F5-EA07361B26A8";
 
     private int position = -1;
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
@@ -267,8 +267,8 @@ public class VisualizationFragment extends Fragment {
     }
 
     //Búsqueda disp. bt
-    public void busquedaBT(){
-        if(ble.isReadyForScan()){
+    public void busquedaBT(String mac){
+       /* if(ble.isReadyForScan()){
             Handler mHandler = new Handler();
             //comienza el escaneo
             ble.scanLeDevice(true);
@@ -276,19 +276,23 @@ public class VisualizationFragment extends Fragment {
             mHandler.postDelayed(() -> {
                 //Obtenemos lista de dispositvios encontrados
                 arBLEEncont = ble.getListDevices();
-                //Convertimos a String para poder mostrarlos en la ListView de disp. encont.
             }, ble.getScanPeriod());
 
-            for (BluetoothLE bte : arBLEEncont){
-                if(bte.getMacAddress().equals(macbt)){ //compr. si coincide con el que queremos con.
-                    selDevice = bte.getDevice();
-                    break;
-                }
-            }
+//            for (BluetoothLE bte : arBLEEncont){
+//                if(bte.getMacAddress().equals(macbt)){ //compr. si coincide con el que queremos con.
+//                    selDevice = bte.getDevice();
+//                    break;
+//                }
+//            }
+//            selDevice =  getActivity().getIntent().getExtras().getParcelable("btdevice");
+
             if(selDevice!=null){
                 ble.connect(selDevice, bleCallback); //conectamos con el disp.
             }
-        }
+        }*/
+
+        selDevice = bluetoothAdapter.getRemoteDevice(mac);
+        selDevice.connectGatt(getActivity(), false, ble.getGatt());
     }
 
     //Actualizar temperatura con la obtenida mediante bluetooth
@@ -301,16 +305,22 @@ public class VisualizationFragment extends Fragment {
         }catch (Exception e){
             Log.i("Obteniendo MAC disp. BT:==> ", "MAC: " + macbt);
         }
-        if(macbt.equals("")) { //comprobamos si se ha obtenido la mac del disp. bt
+        if(macbt == null) { //comprobamos si se ha obtenido la mac del disp. bt
             Log.i("MAC disp bt", "No se ha obtenido ninguna mac " + macbt);
         }else{
-            if (!ble.isConnected()) { //comprobamos si se ha conectado al disp. bt
-                busquedaBT();
-            } else {
-                if(checkIfBleIsConnected(ble)){
-                    ble.read(serviceUUID,charUUID);
+            try{
+                if (!ble.isConnected()) { //comprobamos si se ha conectado al disp. bt
+                    busquedaBT(macbt);
+                } else {
+                    if(checkIfBleIsConnected(ble)){
+                        ble.read(serviceUUID, charUUID);
 
+                    }
                 }
+            }catch (Exception e){
+                Log.e("busquedaBT", "No se ha podido conectar a: " + macbt);
+                Log.e("busquedaBT", "Error: " + e);
+
             }
         }
     }

@@ -2,6 +2,7 @@ package com.stirling.sukaldatzensilam.Views;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.stirling.sukaldatzensilam.R;
 import com.stirling.sukaldatzensilam.Utils.BluetoothLEHelper;
+import com.stirling.sukaldatzensilam.Utils.ServicioBT;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainUserActivity extends AppCompatActivity {
+public  class MainUserActivity extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
 
@@ -131,8 +133,23 @@ public class MainUserActivity extends AppCompatActivity {
                 null, false);
         menu = navigationView.getMenu();
 //        modulos = menu.addSubMenu("Módulos");
+        //Inicializamos el servicio
+        startService(new Intent(this, ServicioBT.class));
 
 
+    }
+    //Método para iniciar el servicio bluetooth
+    public void startService(View view) {
+        startService(new Intent(getBaseContext(), ServicioBT.class));
+    }
+    //Método para bind Service
+    public void bindService(Intent view){
+        bindService(new Intent(getBaseContext(), ServicioBT.class));
+    }
+
+    // Method to stop the service
+    public void stopService(View view) {
+        stopService(new Intent(getBaseContext(), ServicioBT.class));
     }
 
     /**************************************************************************
