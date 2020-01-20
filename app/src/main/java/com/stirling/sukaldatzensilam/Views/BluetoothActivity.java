@@ -289,10 +289,12 @@ public class BluetoothActivity extends AppCompatActivity {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putString("macbt", selDevice.getAddress());
                     editor.commit();
-
-                    /*Intent intentA = new Intent (dispEncontrados.getContext(), MainUserActivity.class);
+                    ble.disconnect();
+                    Intent intentA = new Intent (dispEncontrados.getContext(), MainUserActivity.class);
                     intentA.putExtra("btdevice", selDevice);
-                    startActivity(intentA);*/
+                    startActivity(intentA);
+
+                    finish();
                 }
 
             }
@@ -371,16 +373,18 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //Desconectamos el dispositivo BLE. //No, lo necesitamos para recibir info.
-        //ble.disconnect();
+        //Desconectamos el dispositivo BLE y detenemos scanneo
+        Log.i("ble", "Disp. BLE desconectado y scanneo false desde activity BluetootActivity!!");
+        ble.scanLeDevice(false);
+        ble.disconnect();
     }
 
     private boolean checkIfBleIsConnected(BluetoothLEHelper bluetoothLEHelper){
         if(bluetoothLEHelper.isConnected()){
-            Log.i("isConnected","---->El dispositivo está conectado<----");
+            Log.i("isConnectedBTAct","---->El dispositivo está conectado<----");
             return true;
         }else{
-            Log.i("isConnected", "--->El dispositivo no está conectado<---");
+            Log.i("isConnectedBTAct", "--->El dispositivo no está conectado<---");
             return false;
         }
     }

@@ -84,6 +84,10 @@ public  class MainUserActivity extends AppCompatActivity {
                             case R.id.nav_newPot:
                                 //Para emparejar nueva olla por bluetooth
                                 //Nos movemos a activity de sincr. bluetooth
+                                VisualizationFragment fragment = (VisualizationFragment)
+                                        getSupportFragmentManager()
+                                                .findFragmentByTag("VisualizationFragment");
+                                fragment.ponerANull();
                                 Intent btIntent = new Intent (MainUserActivity.this,
                                         BluetoothActivity.class);
                                 startActivity(btIntent);
@@ -133,24 +137,11 @@ public  class MainUserActivity extends AppCompatActivity {
                 null, false);
         menu = navigationView.getMenu();
 //        modulos = menu.addSubMenu("Módulos");
-        //Inicializamos el servicio
-        startService(new Intent(this, ServicioBT.class));
 
 
-    }
-    //Método para iniciar el servicio bluetooth
-    public void startService(View view) {
-        startService(new Intent(getBaseContext(), ServicioBT.class));
-    }
-    //Método para bind Service
-    public void bindService(Intent view){
-        bindService(new Intent(getBaseContext(), ServicioBT.class));
+
     }
 
-    // Method to stop the service
-    public void stopService(View view) {
-        stopService(new Intent(getBaseContext(), ServicioBT.class));
-    }
 
     /**************************************************************************
      *  /name: openNewFragment

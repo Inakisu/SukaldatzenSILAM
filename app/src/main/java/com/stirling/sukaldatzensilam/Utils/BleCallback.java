@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.util.Log;
 
+import java.util.Arrays;
+
 public class BleCallback {
 
     public void onBleConnectionStateChange(BluetoothGatt gatt, int status, int newState){}
@@ -20,7 +22,7 @@ public class BleCallback {
 
     public void onBleRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic,
                           int status){
-        Log.i("BLE", "onBleRead sucedió");
+        Log.i("BLE", "onBleRead sucedió: "); //+ Arrays.toString(characteristic.getValue()));
     }
 
 

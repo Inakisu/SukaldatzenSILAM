@@ -1,17 +1,18 @@
 package com.stirling.sukaldatzensilam.Views;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.RingtoneManager;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -19,8 +20,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,10 +27,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.app.Service;
+//import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+import android.util.Log;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+//import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothProfile;
 import com.libRG.CustomTextView;
 import com.stirling.sukaldatzensilam.Models.BluetoothLE;
 import com.stirling.sukaldatzensilam.R;
@@ -41,10 +56,17 @@ import com.stirling.sukaldatzensilam.Utils.Notifications;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static android.bluetooth.BluetoothAdapter.STATE_CONNECTED;
+import static android.bluetooth.BluetoothAdapter.STATE_DISCONNECTED;
+import static android.support.v4.content.ContextCompat.getSystemService;
+import static java.lang.Thread.sleep;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -64,27 +86,33 @@ public class VisualizationFragment extends Fragment {
     private boolean seguir = false;
     private boolean rCorriendo = false;
     private int temp;
+    private String tempString;
     private float mil = 0;
     private Handler handler;
     private int minutosTemp = 0;
     private long millisCounter = 0;
     private String macbt;
+    private boolean mScanning;
     Runnable runnable;
+    private Handler mHandler;
 
-    BluetoothDevice selDevice;
-    private BleCallback bleCallback;
-    BluetoothLEHelper ble;
-    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    /*
+        BluetoothDevice selDevice;
+        private BleCallback bleCallback;
+        BluetoothLEHelper ble;
+        */
+    BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    BluetoothGattCallback mGattCallback ;
+    BluetoothGatt mBluetoothGatt;
+    BluetoothDevice bDevice;
+    private static final int REQUEST_ENABLE_BT = 1;
 
-    private ArrayList<String> arListEncont;
-    private ArrayList<BluetoothLE> arBLEEncont;
 
-    private String serviceUUID = "4FAFC201-1FB5-459E-8FCC-C5C9C331914B";
-    private String charUUID = "BEB5483E-36E1-4688-B7F5-EA07361B26A8";
+    private String charUUID = "f547a45c-5264-486a-b107-11db9099ded0"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
 
     private int position = -1;
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
-    String [] tempArray = {"0ºC", "20ºC", "70ºC"};
+
 
     @BindView(R.id.bSetAlarm) TextView bSetTemperatureAlarm;
     @BindView(R.id.temperatureThreshold) TextView temperatureThreshold;
@@ -116,11 +144,195 @@ public class VisualizationFragment extends Fragment {
         return fragment;
     }
 
-    /*@Override
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-    }*/
+        SharedPreferences
+                preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
+                Context.MODE_PRIVATE);
+        macbt = preferences.getString("macbt", null);
+
+
+        //Checkear que el bt esté encendido, y si no diálogo pidiendo encenderlo
+        if(!mBluetoothAdapter.isEnabled()){
+            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getActivity());
+            alertBuilder.setCancelable(true);
+            alertBuilder.setCancelable(true);
+            alertBuilder.setMessage("¿Quiere habilitar el Bluetooth?");
+            alertBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    mBluetoothAdapter.enable();
+                }
+            });
+            AlertDialog alert = alertBuilder.create();
+            alert.show();
+        }
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        // Bluetooth is supported?
+        if (mBluetoothAdapter == null) {
+            Toast.makeText(getActivity(), "BluetoothAdapter no soportado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        macbt = preferences.getString("macbt", null);
+
+        // Bluetooth is enabled?
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+        if (macbt != null && !isScanning() && bDevice==null) {
+            scanLeDevice(true);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        scanLeDevice(false);
+
+    }
+    // Device scan callback.
+    private BluetoothAdapter.LeScanCallback mLeScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    new Runnable() {
+                        @Override
+                        public void run () {
+                            Log.i("BLEFrag", "Name: " + device.getName() + " (" + device.getAddress() + ")");
+                            String deviceAddress = device.getAddress();
+                            if (deviceAddress.equals(macbt)) {
+                                connectToDevice(device);
+                            }
+                        }
+                    }.run();
+                }
+            };
+
+    private void scanLeDevice(final boolean enable) {
+        if (enable && !mScanning) {
+//            Utils.toast(ma.getApplicationContext(), "Starting BLE scan...");
+
+            Log.i("scanLeDeviceFrag: ", "Starting BLE Scan....");
+
+            mHandler = new Handler();
+            // Stops scanning after a pre-defined scan period.
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+//                    Utils.toast(ma.getApplicationContext(), "Stopping BLE scan...");
+
+                    Log.i("scanLeDeviceFrag: ", "Stopping BLE scan...");
+
+
+                    mScanning = false;
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+
+                }
+            }, 3*1000);
+
+            mScanning = true;
+            mBluetoothAdapter.startLeScan(mLeScanCallback);
+//            mBluetoothAdapter.startLeScan(uuids, mLeScanCallback);
+        }
+        else {
+            mScanning = false;
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+        }
+    }
+
+
+    public void connectToDevice(BluetoothDevice device) {
+        if (mBluetoothGatt == null) {
+            Log.i("BLEFrag", "Attempting to connect to device " + device.getName() + " (" + device.getAddress() + ")");
+            mBluetoothGatt = device.connectGatt(getActivity(), true, gattCallback);
+            try {
+                sleep(600);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            bDevice = device;
+            scanLeDevice(false);// will stop after first device detection
+        }
+    }
+    public boolean isScanning() {
+        return mScanning;
+    }
+
+    private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            Log.i("BLEFrag", "Status: " + status);
+            switch (newState) {
+                case BluetoothProfile.STATE_CONNECTED:
+                    Log.i("BLEFrag", "STATE_CONNECTED");
+                    //BluetoothDevice device = gatt.getDevice(); // Get device
+                    gatt.discoverServices();
+                    break;
+                case BluetoothProfile.STATE_DISCONNECTED:
+                    Log.e("BLEFrag", "STATE_DISCONNECTED");
+                    break;
+                default:
+                    Log.e("BLEFrag", "STATE_OTHER");
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            List<BluetoothGattService> services = gatt.getServices();
+            Log.i("BLEFrag", "Services: " + services.toString());
+            BluetoothGattCharacteristic characTemp = null;
+            for(BluetoothGattService ser : services){
+                //if(ser.getUuid().equals(serviceUUID)){
+                BluetoothGattService gattService = services.get(2);
+                characTemp = gattService.getCharacteristic(UUID.fromString(charUUID));
+                    try{
+                        gatt.readCharacteristic(characTemp);
+                        gatt.setCharacteristicNotification(characTemp, true);
+                        try {
+                            sleep(600);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Log.e("onServDiscFrag", "Error sleep: "+ e);
+                        }
+                    }catch (Exception e){
+                        Log.e("readFrag", "Error: " + e);
+                    }
+            }
+
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            // my attempt to read and print characteristics
+            Log.i("infoFrag", "onCharacteristicRead");
+            tempString = characteristic.getStringValue(0);
+            temp = Integer.parseInt(tempString);
+            Log.i("BLEFragOnCharRead", "Characteristic: " + tempString); //dataInput
+            //gatt.disconnect();
+        }
+        @Override
+        public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
+                                                         BluetoothGattCharacteristic characteristic) {
+
+            Log.i("infoFrag", "onCharacteristicChanged");
+            gatt.discoverServices();
+            tempString = characteristic.getStringValue(0);
+            temp = Integer.parseInt(tempString);
+            Log.i("BLEFragOnCharChanged", "Characteristic: " + tempString);
+
+        }
+    };
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -128,6 +340,13 @@ public class VisualizationFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.visualization_fragment, container, false);
 
+    }
+    public int convertByteToInt(byte[] b)
+    {
+        int value= 0;
+        for(int i=0; i<b.length; i++)
+            value = (value << 8) | b[i];
+        return value;
     }
 
     @Override
@@ -138,60 +357,6 @@ public class VisualizationFragment extends Fragment {
 
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
-
-        ble = new BluetoothLEHelper(getActivity());
-
-        //inicializ. array de dispositivos encontrados
-        arListEncont = new ArrayList<String>();
-
-        bleCallback = new BleCallback(){
-
-            @Override
-            public void onBleConnectionStateChange(BluetoothGatt gatt, int status, int newState){
-                super.onBleConnectionStateChange(gatt, status, newState);
-
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Toast.makeText(getActivity(),"Conectado a serv. Bluetooth Gatt",
-                            Toast.LENGTH_SHORT).show();
-                }
-                if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Toast.makeText(getActivity(),"Desconectado del serv. Bluetooth Gatt.",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onBleServiceDiscovered(BluetoothGatt gatt, int status) {
-                super.onBleServiceDiscovered(gatt, status);
-                if (status != BluetoothGatt.GATT_SUCCESS) {
-                    Log.e("Ble ServiceDiscovered","onServicesDiscovered received: "
-                            + status);
-                }
-            }
-
-            @Override
-            public void onBleCharacteristicChange(BluetoothGatt gatt,
-                                                  BluetoothGattCharacteristic characteristic) {
-                super.onBleCharacteristicChange(gatt, characteristic);
-                Log.i("BluetoothLEHelper","onCharacteristicChanged Value: "
-                        + Arrays.toString(characteristic.getValue()));
-            }
-
-            @Override
-            public void onBleRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                super.onBleRead(gatt, characteristic, status);
-                //Intentar obtener temperatura grabada en característica BLE
-                String tempObtenida = Arrays.toString(characteristic.getValue());
-                //Probamos a escribirla por terminal
-                System.out.println("1=======> Valor obtenido BLE: " + tempObtenida);
-                temp = Integer.parseInt(tempObtenida);
-            }
-
-
-        };
-
-
-
         //Boton poner alamra temperatura
         bSetTemperatureAlarm.setOnClickListener(new View.OnClickListener()
         {
@@ -238,6 +403,10 @@ public class VisualizationFragment extends Fragment {
             }
         });
 
+        //SharedPreferences
+        preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
+                Context.MODE_PRIVATE);
+
         final Handler handler = new Handler();
         /* your code here */
         new Runnable() {
@@ -245,72 +414,44 @@ public class VisualizationFragment extends Fragment {
             public void run() {
                 handler.postDelayed(this, 3 * 1000); // cada 3 segundos
                 //lo que queremos que haga cada tres segundos
+                Log.i("info", "Loop de 3 segundos");
+
                 actualizarTemperatura();
                 actualizarColor();
             }
         }.run();
 
-        //SharedPreferences
-        preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
-                Context.MODE_PRIVATE);
+
 
 
     }
-    //Encender contador que funciona si 'true' durante X minutos establecidos en var. minutosTemp.
-    public void arrancarTimer(){
-        millisCounter = minutosTemp*60*1000; //Trabajamos con millisegundos
-        mil = 0;
-        new unCountDown(millisCounter, 1000).start();
-    }
-    //Detener el timer
-    public void pararTimer(){
+    public void ponerANull(){
+        macbt = null;
     }
 
-    //Búsqueda disp. bt
-    public void busquedaBT(String mac){
-       /* if(ble.isReadyForScan()){
-            Handler mHandler = new Handler();
-            //comienza el escaneo
-            ble.scanLeDevice(true);
-            //Cuando finaliza el escaneo;
-            mHandler.postDelayed(() -> {
-                //Obtenemos lista de dispositvios encontrados
-                arBLEEncont = ble.getListDevices();
-            }, ble.getScanPeriod());
-
-//            for (BluetoothLE bte : arBLEEncont){
-//                if(bte.getMacAddress().equals(macbt)){ //compr. si coincide con el que queremos con.
-//                    selDevice = bte.getDevice();
-//                    break;
-//                }
-//            }
-//            selDevice =  getActivity().getIntent().getExtras().getParcelable("btdevice");
-
-            if(selDevice!=null){
-                ble.connect(selDevice, bleCallback); //conectamos con el disp.
-            }
-        }*/
-
-        selDevice = bluetoothAdapter.getRemoteDevice(mac);
-        selDevice.connectGatt(getActivity(), false, ble.getGatt());
-    }
 
     //Actualizar temperatura con la obtenida mediante bluetooth
     public void actualizarTemperatura(){
+        macbt = preferences.getString("macbt", null);
+        /*if(macbt!=null && !mScanning){
+            scanLeDevice(true);
+        }*/
         tvTemperature.setText("-- ºC");
-        temp = 0;
-        macbt = "";
-        try{
+        tvTemperature.setText(temp + " ºC");
+        /*try{
             macbt = preferences.getString("macbt", null);
         }catch (Exception e){
             Log.i("Obteniendo MAC disp. BT:==> ", "MAC: " + macbt);
-        }
-        if(macbt == null) { //comprobamos si se ha obtenido la mac del disp. bt
+        }*/
+        /*if(macbt == null) { //comprobamos si se ha obtenido la mac del disp. bt
             Log.i("MAC disp bt", "No se ha obtenido ninguna mac " + macbt);
-        }else{
-            try{
+        }else{*/
+
+
+            /*try{
                 if (!ble.isConnected()) { //comprobamos si se ha conectado al disp. bt
                     busquedaBT(macbt);
+                    Log.i("busqBT:", "ble.isConected, conectado");
                 } else {
                     if(checkIfBleIsConnected(ble)){
                         ble.read(serviceUUID, charUUID);
@@ -321,9 +462,69 @@ public class VisualizationFragment extends Fragment {
                 Log.e("busquedaBT", "No se ha podido conectar a: " + macbt);
                 Log.e("busquedaBT", "Error: " + e);
 
-            }
-        }
+            }*/
+//        }
     }
+
+
+    //    private BleCallback bleCallbacks(){
+//
+//        return new BleCallback() {
+//
+//            @Override
+//            public void onBleConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+//                super.onBleConnectionStateChange(gatt, status, newState);
+//
+//                if (newState == BluetoothProfile.STATE_CONNECTED) {
+//                    Toast.makeText(getActivity(), "Conectado a serv. Bluetooth Gatt",
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//                if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+//                    Toast.makeText(getActivity(), "Desconectado del serv. Bluetooth Gatt.",
+//                            Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//
+//            @Override
+//            public void onBleServiceDiscovered(BluetoothGatt gatt, int status) {
+//                super.onBleServiceDiscovered(gatt, status);
+//                if (status != BluetoothGatt.GATT_SUCCESS) {
+//                    Log.e("Ble ServiceDiscovered", "onServicesDiscovered received: "
+//                            + status);
+//                }
+//            }
+//
+//            @Override
+//            public void onBleCharacteristicChange(BluetoothGatt gatt,
+//                                                  BluetoothGattCharacteristic characteristic) {
+//                super.onBleCharacteristicChange(gatt, characteristic);
+//                Log.i("BluetoothLEHelper", "onCharacteristicChanged Value: "
+//                        + Arrays.toString(characteristic.getValue()));
+//            }
+//
+//            @Override
+//            public void onBleRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+//                super.onBleRead(gatt, characteristic, status);
+//                //Intentar obtener temperatura grabada en característica BLE
+//                /*String tempObtenida = Arrays.toString(characteristic.getValue());
+//                //Probamos a escribirla por terminal
+//                System.out.println("1=======> Valor obtenido BLE: " + tempObtenida);
+//                temp = Integer.parseInt(tempObtenida);*/
+//            }
+//
+//        };
+//    }
+    //Encender contador que funciona si 'true' durante X minutos establecidos en var. minutosTemp.
+    public void arrancarTimer(){
+        millisCounter = minutosTemp*60*1000; //Trabajamos con millisegundos
+        mil = 0;
+        new unCountDown(millisCounter, 1000).start();
+    }
+    //Detener el timer
+    public void pararTimer(){
+    }
+
+
     //Actualiza el color del círculo en el que se muestra la temperatura
     public void actualizarColor(){
 
@@ -338,20 +539,14 @@ public class VisualizationFragment extends Fragment {
             } else if (temp < temp3) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempRojo));
             } else {
+                if(temp==0){
+                    tvTemperature.setBackgroundColor(getContext()
+                            .getColor(R.color.material_grey300));
+                }
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.material_grey300));
             }
         }catch (Exception e){
 
-        }
-    }
-
-    private boolean checkIfBleIsConnected(BluetoothLEHelper bluetoothLEHelper){
-        if(bluetoothLEHelper.isConnected()){
-            Log.i("isConnected","---->El dispositivo está conectado<----");
-            return true;
-        }else{
-            Log.i("isConnected", "--->El dispositivo no está conectado<---");
-            return false;
         }
     }
 
@@ -386,7 +581,7 @@ public class VisualizationFragment extends Fragment {
         @Override
         public void onFinish() {
             timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
-                     "Finalizado"));
+                    "Finalizado"));
             seekBarTime.setMax(30);
             Notifications.show(getActivity(), VisualizationFragment.class,
                     "Temporizador tupper", "El temporizador ha finalizado.");
@@ -408,6 +603,7 @@ public class VisualizationFragment extends Fragment {
             //Log.i(TAG, "Time tick: " + millisUntilFinished);
         }
     }
+
 }
 
 
