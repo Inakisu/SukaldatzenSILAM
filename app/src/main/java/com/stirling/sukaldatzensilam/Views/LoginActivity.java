@@ -149,7 +149,7 @@ public class LoginActivity extends AppCompatActivity {
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 } else {
-//todo  que no se cierre la sesión
+                                    //todo  que no se cierre la sesión
        //                             editor.putLong("user", )
                                     Intent intent = new Intent(LoginActivity.this,
                                             MainUserActivity.class);
@@ -167,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                 Intent signInIntent = mGoogleSignInClient.getSignInIntent();
                 startActivityForResult(signInIntent, 101);
 
-                //Obtener correo e información y si falta algo solicitarla para meterlo a BD
+                //todo: Obtener correo e información y si falta algo solicitarla para meterlo a BD
 
             }
         });

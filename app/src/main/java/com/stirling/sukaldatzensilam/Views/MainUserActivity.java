@@ -34,18 +34,10 @@ import butterknife.ButterKnife;
 
 public  class MainUserActivity extends AppCompatActivity {
 
-    SharedPreferences sharedPreferences;
-
-    private int NUM_OF_COUNT;
-    private boolean timelapseRunning = false;
     private Menu menu;
     private SubMenu modulos;
     private String correoUsu = "Correo del usuario";
     private FirebaseAuth auth;
-    private String macbt;
-    private int tempObtBT;
-
-    BluetoothLEHelper ble;
 
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.drawer_layout) DrawerLayout drawer;
@@ -60,7 +52,6 @@ public  class MainUserActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         //Initialize toolbar
-//        setSupportActionBar(toolbar);
         toolbar.setTitle("SukaldatzenSILAM");
         //Initialize Navigation Drawer
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
@@ -75,10 +66,8 @@ public  class MainUserActivity extends AppCompatActivity {
                 (new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
                         // Handle navigation view item clicks here.
                         int id = item.getItemId();
-
                         switch (id)
                         {
                             case R.id.nav_newPot:
@@ -107,10 +96,7 @@ public  class MainUserActivity extends AppCompatActivity {
                                 finish();
                                 break;
                         }
-
-
                         drawer.closeDrawer(GravityCompat.START);
-
                         return true;
                     }
 
@@ -128,8 +114,6 @@ public  class MainUserActivity extends AppCompatActivity {
 
             @Override
             public void onDrawerClosed(View drawerView) {
-
-
             }
         });
 
@@ -137,9 +121,6 @@ public  class MainUserActivity extends AppCompatActivity {
                 null, false);
         menu = navigationView.getMenu();
 //        modulos = menu.addSubMenu("Módulos");
-
-
-
     }
 
 

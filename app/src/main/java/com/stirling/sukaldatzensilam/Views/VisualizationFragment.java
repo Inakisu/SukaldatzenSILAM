@@ -49,6 +49,7 @@ public class VisualizationFragment extends Fragment {
     SharedPreferences preferences;
 
     private int NUM_OF_COUNT;
+    private boolean alTAct = false;
     private boolean seguir = false;
     private boolean rCorriendo = false;
     private int temp;
@@ -303,17 +304,20 @@ public class VisualizationFragment extends Fragment {
 
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
+
         //Boton poner alamra temperatura
         bSetTemperatureAlarm.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                if(bSetTemperatureAlarm.getText().equals("Activar")){ //Activar alarma
+                if(bSetTemperatureAlarm.getText().toString().equals("Activar")){ //Activar alarma
                     temperatureThreshold.setText(Html.fromHtml("<b>Temperatura límite: </b>" +
                             seekBarTemp.getProgress() + "ºC"));
                     bSetTemperatureAlarm.setText("Desactivar");
+                    alTAct = true;
                 }else{ //Desactivar alarma
+                    alTAct = false;
                     temperatureThreshold.setText(Html.fromHtml("<b> </b>"));
                     bSetTemperatureAlarm.setText("Activar");
                 }
@@ -362,11 +366,24 @@ public class VisualizationFragment extends Fragment {
                 handler.postDelayed(this, 3 * 1000); // cada 3 segundos
                 //lo que queremos que haga cada tres segundos
                 Log.i("info", "Loop de 3 segundos");
+                comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
             }
         }.run();
     }
+
+    public void comprobarAlarmaT(boolean activada){
+        if(activada){
+            if(temp>=seekBarTemp.getProgress()){
+                Notifications.show(getActivity(), VisualizationFragment.class,
+                        "Temperatura tupper", "Temperatura consigna alcanzada");
+                bSetTemperatureAlarm.setText("Activar");
+                alTAct =false;
+            }
+        }
+    }
+
     public void ponerANull(){
         macbt = null;
     }
@@ -455,6 +472,7 @@ public class VisualizationFragment extends Fragment {
             seekBarTime.setMax(30);
             Notifications.show(getActivity(), VisualizationFragment.class,
                     "Temporizador tupper", "El temporizador ha finalizado.");
+            bSetTimeAlarm.setText("Activar");
         }
 
         @Override
@@ -473,7 +491,6 @@ public class VisualizationFragment extends Fragment {
             //Log.i(TAG, "Time tick: " + millisUntilFinished);
         }
     }
-
 }
 
 
