@@ -41,7 +41,7 @@ public class Notifications
                     .setSound(RingtoneManager.getDefaultUri((RingtoneManager.TYPE_ALARM)))
                     .setLights(0xff0000ff, 100,100)
                     .setContentIntent(pendingIntent);
-
+//R.mipmap.ic_launcher_iconolla_foreground
             notificationManager.notify(0, noBuilder.build()); //0 = ID of notification
         }
         else
@@ -58,7 +58,7 @@ public class Notifications
             }
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ctx, channelId)
-                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSmallIcon(R.mipmap.ic_launcher_iconolla_foreground)
                     .setContentTitle(title)
                     .setContentText(message);
 
