@@ -1,3 +1,7 @@
+/**
+ * Iñaki Zorrilla 2019
+ */
+
 package com.stirling.sukaldatzensilam.Views;
 
 import android.app.AlertDialog;
@@ -12,7 +16,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -29,53 +32,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import android.app.Service;
-//import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
-import android.util.Log;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-//import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothProfile;
 import com.libRG.CustomTextView;
-import com.stirling.sukaldatzensilam.Models.BluetoothLE;
 import com.stirling.sukaldatzensilam.R;
-import com.stirling.sukaldatzensilam.Utils.BleCallback;
-import com.stirling.sukaldatzensilam.Utils.BluetoothLEHelper;
 import com.stirling.sukaldatzensilam.Utils.Notifications;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static android.bluetooth.BluetoothAdapter.STATE_CONNECTED;
-import static android.bluetooth.BluetoothAdapter.STATE_DISCONNECTED;
-import static android.support.v4.content.ContextCompat.getSystemService;
 import static java.lang.Thread.sleep;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link VisualizationFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link VisualizationFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class VisualizationFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
@@ -96,23 +62,13 @@ public class VisualizationFragment extends Fragment {
     Runnable runnable;
     private Handler mHandler;
 
-    /*
-        BluetoothDevice selDevice;
-        private BleCallback bleCallback;
-        BluetoothLEHelper ble;
-        */
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    BluetoothGattCallback mGattCallback ;
     BluetoothGatt mBluetoothGatt;
     BluetoothDevice bDevice;
     private static final int REQUEST_ENABLE_BT = 1;
-
-
     private String charUUID = "f547a45c-5264-486a-b107-11db9099ded0"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
 
-    private int position = -1;
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
-
 
     @BindView(R.id.bSetAlarm) TextView bSetTemperatureAlarm;
     @BindView(R.id.temperatureThreshold) TextView temperatureThreshold;
@@ -125,8 +81,6 @@ public class VisualizationFragment extends Fragment {
     @BindView(R.id.timeAlarm)    TextView timeAlarm;
     @BindView(R.id.imgTupper2) ImageView MyImageView;
     @BindView(R.id.temperatureIndicator) CustomTextView tvTemperature;
-
-
 
     /**
      * Use this factory method to create a new instance of
@@ -147,13 +101,10 @@ public class VisualizationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         SharedPreferences
                 preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
         macbt = preferences.getString("macbt", null);
-
-
         //Checkear que el bt esté encendido, y si no diálogo pidiendo encenderlo
         if(!mBluetoothAdapter.isEnabled()){
             AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getActivity());
@@ -170,21 +121,18 @@ public class VisualizationFragment extends Fragment {
             AlertDialog alert = alertBuilder.create();
             alert.show();
         }
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         // Bluetooth is supported?
         if (mBluetoothAdapter == null) {
             Toast.makeText(getActivity(), "BluetoothAdapter no soportado", Toast.LENGTH_SHORT).show();
             return;
         }
     }
+
     @Override
     public void onResume() {
         super.onResume();
-
         macbt = preferences.getString("macbt", null);
-
         // Bluetooth is enabled?
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -198,10 +146,11 @@ public class VisualizationFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        scanLeDevice(false);
-
+        scanLeDevice(false); //porque se pondrá a escanear la activity BluetoothAct.
     }
-    // Device scan callback.
+    /**
+     * Callback, sucede al terminar de escanear
+     */
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
                 @Override
@@ -219,31 +168,27 @@ public class VisualizationFragment extends Fragment {
                 }
             };
 
+    /**
+     * Método encargado de escanear en busca de dispositivos Bluetooth
+     * Low Energy.
+     *
+     * @param enable Parameter 1.
+     */
     private void scanLeDevice(final boolean enable) {
         if (enable && !mScanning) {
-//            Utils.toast(ma.getApplicationContext(), "Starting BLE scan...");
-
             Log.i("scanLeDeviceFrag: ", "Starting BLE Scan....");
-
             mHandler = new Handler();
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-//                    Utils.toast(ma.getApplicationContext(), "Stopping BLE scan...");
-
                     Log.i("scanLeDeviceFrag: ", "Stopping BLE scan...");
-
-
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
-
                 }
             }, 3*1000);
-
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
-//            mBluetoothAdapter.startLeScan(uuids, mLeScanCallback);
         }
         else {
             mScanning = false;
@@ -251,7 +196,11 @@ public class VisualizationFragment extends Fragment {
         }
     }
 
-
+    /**
+     * Método utilizado para conectarse a un dispositivo BT LE.
+     *
+     * @param device dispositivo BT al que conectarse.
+     */
     public void connectToDevice(BluetoothDevice device) {
         if (mBluetoothGatt == null) {
             Log.i("BLEFrag", "Attempting to connect to device " + device.getName() + " (" + device.getAddress() + ")");
@@ -265,10 +214,14 @@ public class VisualizationFragment extends Fragment {
             scanLeDevice(false);// will stop after first device detection
         }
     }
+
     public boolean isScanning() {
         return mScanning;
     }
 
+    /**
+     * Callbacks que suceden en determinados eventos relacionados con el BT LE.
+     */
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -341,13 +294,6 @@ public class VisualizationFragment extends Fragment {
         return inflater.inflate(R.layout.visualization_fragment, container, false);
 
     }
-    public int convertByteToInt(byte[] b)
-    {
-        int value= 0;
-        for(int i=0; i<b.length; i++)
-            value = (value << 8) | b[i];
-        return value;
-    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstancestate){
@@ -373,9 +319,12 @@ public class VisualizationFragment extends Fragment {
                 }
             }
         });
-        //Boton poner temporizador
-        bSetTimeAlarm.setOnClickListener(new View.OnClickListener()
-        {
+        /**
+         * Listener del botón de alarma por cuenta atrás
+         *
+         * @return una notificación al terminar la cuenta atrás
+         */
+        bSetTimeAlarm.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v)
             {
@@ -385,14 +334,13 @@ public class VisualizationFragment extends Fragment {
                     if(!rCorriendo){
                         seguir = true;
                     }else{
-                        pararTimer();
+                        //Detener
                     }
                     minutosTemp = seekBarTime.getProgress();
                     bSetTimeAlarm.setText("Desactivar");
                     seguir = true;
                     arrancarTimer();
                 }else{ //Desactivar temporizador
-                    pararTimer();
                     bSetTimeAlarm.setText("Activar");
                     seguir = false;
                     timeAlarm.setText(Html.fromHtml(" "));
@@ -408,124 +356,43 @@ public class VisualizationFragment extends Fragment {
                 Context.MODE_PRIVATE);
 
         final Handler handler = new Handler();
-        /* your code here */
         new Runnable() {
             @Override
             public void run() {
                 handler.postDelayed(this, 3 * 1000); // cada 3 segundos
                 //lo que queremos que haga cada tres segundos
                 Log.i("info", "Loop de 3 segundos");
-
                 actualizarTemperatura();
                 actualizarColor();
             }
         }.run();
-
-
-
-
     }
     public void ponerANull(){
         macbt = null;
     }
 
 
-    //Actualizar temperatura con la obtenida mediante bluetooth
+    /**
+     * Se actualiza la temperatura mostrada en pantalla según los datos recibidos por BT
+     */
     public void actualizarTemperatura(){
         macbt = preferences.getString("macbt", null);
-        /*if(macbt!=null && !mScanning){
-            scanLeDevice(true);
-        }*/
         tvTemperature.setText("-- ºC");
         tvTemperature.setText(temp + " ºC");
-        /*try{
-            macbt = preferences.getString("macbt", null);
-        }catch (Exception e){
-            Log.i("Obteniendo MAC disp. BT:==> ", "MAC: " + macbt);
-        }*/
-        /*if(macbt == null) { //comprobamos si se ha obtenido la mac del disp. bt
-            Log.i("MAC disp bt", "No se ha obtenido ninguna mac " + macbt);
-        }else{*/
-
-
-            /*try{
-                if (!ble.isConnected()) { //comprobamos si se ha conectado al disp. bt
-                    busquedaBT(macbt);
-                    Log.i("busqBT:", "ble.isConected, conectado");
-                } else {
-                    if(checkIfBleIsConnected(ble)){
-                        ble.read(serviceUUID, charUUID);
-
-                    }
-                }
-            }catch (Exception e){
-                Log.e("busquedaBT", "No se ha podido conectar a: " + macbt);
-                Log.e("busquedaBT", "Error: " + e);
-
-            }*/
-//        }
     }
 
-
-    //    private BleCallback bleCallbacks(){
-//
-//        return new BleCallback() {
-//
-//            @Override
-//            public void onBleConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-//                super.onBleConnectionStateChange(gatt, status, newState);
-//
-//                if (newState == BluetoothProfile.STATE_CONNECTED) {
-//                    Toast.makeText(getActivity(), "Conectado a serv. Bluetooth Gatt",
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//                if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-//                    Toast.makeText(getActivity(), "Desconectado del serv. Bluetooth Gatt.",
-//                            Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//
-//            @Override
-//            public void onBleServiceDiscovered(BluetoothGatt gatt, int status) {
-//                super.onBleServiceDiscovered(gatt, status);
-//                if (status != BluetoothGatt.GATT_SUCCESS) {
-//                    Log.e("Ble ServiceDiscovered", "onServicesDiscovered received: "
-//                            + status);
-//                }
-//            }
-//
-//            @Override
-//            public void onBleCharacteristicChange(BluetoothGatt gatt,
-//                                                  BluetoothGattCharacteristic characteristic) {
-//                super.onBleCharacteristicChange(gatt, characteristic);
-//                Log.i("BluetoothLEHelper", "onCharacteristicChanged Value: "
-//                        + Arrays.toString(characteristic.getValue()));
-//            }
-//
-//            @Override
-//            public void onBleRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-//                super.onBleRead(gatt, characteristic, status);
-//                //Intentar obtener temperatura grabada en característica BLE
-//                /*String tempObtenida = Arrays.toString(characteristic.getValue());
-//                //Probamos a escribirla por terminal
-//                System.out.println("1=======> Valor obtenido BLE: " + tempObtenida);
-//                temp = Integer.parseInt(tempObtenida);*/
-//            }
-//
-//        };
-//    }
-    //Encender contador que funciona si 'true' durante X minutos establecidos en var. minutosTemp.
+    /**
+     * Timer utilizado en la alarma por cuenta atrás
+     */
     public void arrancarTimer(){
         millisCounter = minutosTemp*60*1000; //Trabajamos con millisegundos
         mil = 0;
         new unCountDown(millisCounter, 1000).start();
     }
-    //Detener el timer
-    public void pararTimer(){
-    }
 
-
-    //Actualiza el color del círculo en el que se muestra la temperatura
+    /**
+     * Se actualiza el color del círculo que contiene el valor de la temperatura
+     */
     public void actualizarColor(){
 
         int temp1 = getResources().getInteger(R.integer.tempVerdeMenorQue);
@@ -534,9 +401,13 @@ public class VisualizationFragment extends Fragment {
         try {
             if (temp < temp1) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempVerde));
-            } else if (temp1 < temp && temp < temp2) {
+                if(temp==0) {
+                    tvTemperature.setBackgroundColor(getContext()
+                            .getColor(R.color.material_grey300));
+                }
+            } else if (temp1 <= temp && temp < temp2) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempAmarillo));
-            } else if (temp < temp3) {
+            } else if (temp <= temp3) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempRojo));
             } else {
                 if(temp==0){
@@ -546,7 +417,7 @@ public class VisualizationFragment extends Fragment {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.material_grey300));
             }
         }catch (Exception e){
-
+            Log.e("Actual. Color: ", "Excep.: " + e);
         }
     }
 
@@ -572,7 +443,6 @@ public class VisualizationFragment extends Fragment {
     }
 
     public class unCountDown extends CountDownTimer {
-
         public unCountDown(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
             seekBarTime.setMax((int) millisInFuture);

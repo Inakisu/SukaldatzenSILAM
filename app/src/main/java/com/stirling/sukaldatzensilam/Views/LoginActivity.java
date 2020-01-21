@@ -118,7 +118,8 @@ public class LoginActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.VISIBLE);
                 //Autenticar usuario
                 auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                        .addOnCompleteListener(LoginActivity.this,
+                                new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 //Si el logueo falla, enseña un mensaje al usuario
@@ -157,17 +158,6 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             }
                         });
-                //Ya logueado, comprobar si ha verificado el email
-               /*FirebaseAuth auth= FirebaseAuth.getInstance();
-                user = auth.getCurrentUser();
-                user.reload();
-                if(!user.isEmailVerified()){
-                    Toast.makeText(LoginActivity.this, "Verifique su email.",
-                            Toast.LENGTH_SHORT).show();
-                    Log.i("Intentar login", "Se ordena al usuario a verificar su email");
-                    auth.signOut();
-                    //finish();
-                }*/
             }
 
         });

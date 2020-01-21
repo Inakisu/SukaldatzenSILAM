@@ -72,63 +72,16 @@ public class BluetoothActivity extends AppCompatActivity {
     private ListView dispEncontrados;
     private ListView dispVinculados;
     private ProgressBar progressBar2;
-    private ProgressBar progressBar3;
-    private ProgressBar progressBar32;
     private Button botonBuscar;
-    private Button botonAceptar;
-    private Button botonAcpetar2;
-    private PopupWindow popupWindow;
-    private PopupWindow popupWindow2;
-    private RelativeLayout relativeLayout;
-    private EditText editText;
-    private EditText editTextPass;
-    private EditText editTextPass2;
-
-    private OutputStream outputStream;
-    private InputStream inputStream;
-
     private ArrayList<String> arListEncont;
-    private ArrayList<String> arListEmparej;
     private ArrayList<BluetoothLE> arBLEEncont;
-
     private ArrayAdapter<String> arrayAdapterDispEncontrados;
-
     BluetoothDevice selDevice;
     private BleCallback bleCallback;
-
-    private String queryJson = "";
-    private JSONObject jsonObject;
-    private String mElasticSearchPassword = Constants.elasticPassword;
-
     private Retrofit retrofit;
     private ElasticSearchAPI searchAPI;
-
     private String tempObtenida;
-
     FirebaseAuth auth;
-    private String email;
-
-    /*protected BluetoothActivity(Parcel in) {
-        arListEncont = in.createStringArrayList();
-        arListEmparej = in.createStringArrayList();
-        selDevice = in.readParcelable(BluetoothDevice.class.getClassLoader());
-        queryJson = in.readString();
-        mElasticSearchPassword = in.readString();
-        tempObtenida = in.readString();
-        email = in.readString();
-    }*/
-
-    /*public static final Parcelable.Creator<BluetoothActivity> CREATOR = new Parcelable.Creator<BluetoothActivity>() {
-        @Override
-        public BluetoothActivity createFromParcel(Parcel in) {
-            return new BluetoothActivity(in);
-        }
-
-        @Override
-        public BluetoothActivity[] newArray(int size) {
-            return new BluetoothActivity[size];
-        }
-    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,23 +89,16 @@ public class BluetoothActivity extends AppCompatActivity {
         sharedPreferences = getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
         setContentView(R.layout.activity_bluetooth);
-        relativeLayout = (RelativeLayout) findViewById(R.id.relativeLayout);
-
         ble = new BluetoothLEHelper(this   );
         auth = FirebaseAuth.getInstance();
 
-        email = auth.getCurrentUser().getEmail();
         //Verificamos que el Bluetooth esté encendido, y si no lo está, pedimos encenderlo
         if(adapter == null || !adapter.isEnabled()){
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
         }
 
-        //Inicializamos la API
-        //inicializarAPI();
-
         arListEncont = new ArrayList<String>();
-
         //Inicializamos elementos de la interfaz
         progressBar2 = (ProgressBar) findViewById(R.id.progressBar2);
         botonBuscar = (Button) findViewById(R.id.buscarButton);
@@ -314,8 +260,10 @@ public class BluetoothActivity extends AppCompatActivity {
         return arrayEncString;
     }
 
-    //En este método se solicitan los permisos necesarios para utilizar
-    // funcionalidades Bluetooth
+    /**
+     * Se solicitan los permisos necesarios para la utilización de funciones bluetooth
+     * Solicitados: ubicación
+     */
     private void solicitarPermisos() {
         int MY_PERMISSIONS_REQUEST_ACCESS_COARSE_LOCATION = 1;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {  // Only ask for these permissions on runtime when running Android 6.0 or higher
@@ -352,23 +300,15 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
-    //Inicializar conexion con la BD Elasticsearch. Se necesita en este momento?
-    private void inicializarAPI(){
-        retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.URL_ELASTICSEARCH)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        searchAPI = retrofit.create(ElasticSearchAPI.class);
-    }
-
-    //Hacemos nuestro dispositivo visible a otros dispositivos Bluetooth
+    /**
+     * Hacemos nuestro dispositivo visible a otros dispositivos Bluetooth durante 400 segundos
+     */
     private void hacerVisible() {
         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 400);
         startActivity(discoverableIntent);
         Log.i("Log", "Discoverable ");
     }
-
 
     @Override
     protected void onDestroy() {
@@ -388,17 +328,4 @@ public class BluetoothActivity extends AppCompatActivity {
             return false;
         }
     }
-
-
-
-    /*@Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeStringList(arListEncont);
-        dest.writeStringList(arListEmparej);
-        dest.writeParcelable(selDevice, flags);
-        dest.writeString(queryJson);
-        dest.writeString(mElasticSearchPassword);
-        dest.writeString(tempObtenida);
-        dest.writeString(email);
-    }*/
 }
