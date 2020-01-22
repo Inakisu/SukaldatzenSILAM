@@ -32,14 +32,35 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.firebase.auth.FirebaseAuth;
 import com.libRG.CustomTextView;
+import com.stirling.sukaldatzensilam.Models.POJOs.RespuestaU;
 import com.stirling.sukaldatzensilam.R;
+import com.stirling.sukaldatzensilam.Utils.Constants;
+import com.stirling.sukaldatzensilam.Utils.ElasticSearchAPI;
 import com.stirling.sukaldatzensilam.Utils.Notifications;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import okhttp3.Credentials;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import static android.content.ContentValues.TAG;
 import static java.lang.Thread.sleep;
 
 public class VisualizationFragment extends Fragment {
@@ -68,6 +89,15 @@ public class VisualizationFragment extends Fragment {
     BluetoothDevice bDevice;
     private static final int REQUEST_ENABLE_BT = 1;
     private String charUUID = "f547a45c-5264-486a-b107-11db9099ded0"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
+    private FirebaseAuth mAuth;
+    private Retrofit retrofit;
+    private ElasticSearchAPI searchAPI;
+    private String mElasticSearchPassword = Constants.elasticPassword;
+    private String elCorreo = "";
+    private String queryJson = "";
+    private JSONObject jsonObject;
+    private String correoUsuario;
+
 
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
 
@@ -106,6 +136,11 @@ public class VisualizationFragment extends Fragment {
                 preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
         macbt = preferences.getString("macbt", null);
+        //Inicializar API
+        inicializarAPI();
+        //obtener correo del usuario logueado
+        mAuth = FirebaseAuth.getInstance();
+        correoUsuario = mAuth.getCurrentUser().getEmail();
         //Checkear que el bt esté encendido, y si no diálogo pidiendo encenderlo
         if(!mBluetoothAdapter.isEnabled()){
             AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getActivity());
@@ -369,6 +404,7 @@ public class VisualizationFragment extends Fragment {
                 comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
+                enviarABD(correoUsuario, macbt, temp, 0);
             }
         }.run();
     }
@@ -436,6 +472,73 @@ public class VisualizationFragment extends Fragment {
         }catch (Exception e){
             Log.e("Actual. Color: ", "Excep.: " + e);
         }
+    }
+
+    private void inicializarAPI(){
+        retrofit = new Retrofit.Builder()
+                .baseUrl(Constants.URL_ELASTICSEARCH)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        searchAPI = retrofit.create(ElasticSearchAPI.class);
+    }
+
+    private void enviarABD(String correo, String macdispBT, int temperatura, int girado){
+        //Generamos un authentication header para identificarnos contra Elasticsearch
+        HashMap<String, String> headerMap = new HashMap<String, String>();
+        headerMap.put("Authorization", Credentials.basic("android",
+                mElasticSearchPassword));
+        try {
+            //Este es el JSON en el que especificamos los parámetros de la búsqueda
+            queryJson = "{\n"+
+                    "\"correo\":\"" + correo + "\",\n" +
+                    "\"macbt\":\"" + macdispBT + "\",\n" +
+                    "\"temperatura\":\""+ temperatura + "\",\n" +
+                    "\"girado\":\"" + girado + "\"\n" +
+                    "}";
+            jsonObject = new JSONObject(queryJson);
+        }catch (JSONException jerr){
+            Log.d("Error: ", jerr.toString());
+        }
+        //Creamos el body con el JSON
+        RequestBody body = RequestBody.create(okhttp3.MediaType
+                .parse("application/json; charset=utf-8"),(jsonObject.toString()));
+        //Realizamos la llamada mediante la API
+        Call<RespuestaU> call = searchAPI.postTupper(headerMap, body);
+        call.enqueue(new Callback<RespuestaU>() {
+            @Override
+            public void onResponse(Call<RespuestaU> call, Response<RespuestaU> response) {
+                RespuestaU respuestaU = new RespuestaU();
+                String jsonResponse;
+                try{
+                    Log.d(TAG, "onResponse: server response: " + response.toString());
+                    //Si la respuesta es satisfactoria
+                    if(response.isSuccessful()){
+                        Log.d(TAG, "repsonseBody: "+ response.body().toString());
+                        System.out.println(respuestaU.toString());
+                        System.out.println(respuestaU.getIndex());
+                        Log.d(TAG, " -----------onResponse: la response: " + response.body()
+                                .toString());
+                    }else{
+                        jsonResponse = response.errorBody().string(); //error response body
+                        System.out.println("Response body: " + jsonResponse);
+                    }
+                }catch (NullPointerException e){
+                    Log.e(TAG, "onResponse: NullPointerException: " + e.getMessage() );
+                }
+                catch (IndexOutOfBoundsException e){
+                    Log.e(TAG, "onResponse: IndexOutOfBoundsException: " + e.getMessage() );
+                }
+                catch (IOException e){
+                    Log.e(TAG, "onResponse: IOException: " + e.getMessage() );
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RespuestaU> call, Throwable t) {
+                Log.e(TAG, "onFailure del POST usuario registrado ");
+                System.out.println("El throwable: " + t);
+            }
+        });
     }
 
     @Override
