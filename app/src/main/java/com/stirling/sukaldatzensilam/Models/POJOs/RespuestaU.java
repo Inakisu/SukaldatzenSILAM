@@ -48,7 +48,8 @@ public class RespuestaU {
      * @param type
      * @param version
      */
-    public RespuestaU(String index, String type, String id, Integer version, String result, Shards shards, Integer seqNo, Integer primaryTerm) {
+    public RespuestaU(String index, String type, String id, Integer version, String result,
+                      Shards shards, Integer seqNo, Integer primaryTerm) {
         super();
         this.index = index;
         this.type = type;

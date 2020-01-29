@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -404,7 +405,7 @@ public class VisualizationFragment extends Fragment {
                 comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
-                enviarABD(correoUsuario, macbt, temp, 0);
+                enviarABD(correoUsuario, macbt, temp, 0,0);
             }
         }.run();
     }
@@ -482,7 +483,7 @@ public class VisualizationFragment extends Fragment {
         searchAPI = retrofit.create(ElasticSearchAPI.class);
     }
 
-    private void enviarABD(String correo, String macdispBT, int temperatura, int girado){
+    private void enviarABD(String correo, String macdispBT, int temperatura, int girado, int lleno){
         //Generamos un authentication header para identificarnos contra Elasticsearch
         HashMap<String, String> headerMap = new HashMap<String, String>();
         headerMap.put("Authorization", Credentials.basic("android",
@@ -490,10 +491,12 @@ public class VisualizationFragment extends Fragment {
         try {
             //Este es el JSON en el que especificamos los parámetros de la búsqueda
             queryJson = "{\n"+
-                    "\"correo\":\"" + correo + "\",\n" +
                     "\"macbt\":\"" + macdispBT + "\",\n" +
-                    "\"temperatura\":\""+ temperatura + "\",\n" +
-                    "\"girado\":\"" + girado + "\"\n" +
+                    "\"temperatura\":\"" + temperatura + "\",\n" +
+                    "\"girado\":\""+ girado + "\",\n" +
+                    "\"lleno\":\"" + lleno + "\",\n" +
+                    "\"correousu\":\""+ correo + "\",\n" +
+                    "\"timestamp\":\""+ System.currentTimeMillis() + "\"\n" +
                     "}";
             jsonObject = new JSONObject(queryJson);
         }catch (JSONException jerr){
