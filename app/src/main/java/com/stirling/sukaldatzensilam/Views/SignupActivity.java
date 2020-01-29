@@ -198,21 +198,7 @@ public class SignupActivity extends AppCompatActivity {
                                                     + task.getException().getMessage());
 
                                         } else {
-                                            //I: Registro correcto --> enviar email verificación
-                           /*         user = auth.getCurrentUser();
-                                    enviarVerif(); //Llamada a método para enviar email verificación*/
-                                    /*if(!user.isEmailVerified()) {//I: revisar este if
-                                        Toast.makeText(SignupActivity.this,
-                                                "Verifique el correo", Toast.LENGTH_SHORT).show();
-                                        auth.getInstance().signOut();
-                                        startActivity(new Intent(SignupActivity.this,
-                                                SignupActivity.class));
-                                       // finish();
-                                    }else{
-                                        startActivity(new Intent(SignupActivity.this,
-                                                MainUserActivity.class));
-                                        finish();
-                                    }*/
+
                                         }
                                     }
                                 });
@@ -392,7 +378,9 @@ public class SignupActivity extends AppCompatActivity {
         searchAPI = retrofit.create(ElasticSearchAPI.class);
     }
     private void nuevoUsuario(String correo, String nombre, String fechaNac, String coords){
-
+        coords ="0,0";
+        Log.i("RegistroUsuario","Registramos usuario con Correo:" + correo + ", " +
+                "Nombre:" + nombre + ", FechaNac.:" + fechaNac + ", Coordenadas:" + coords);
         //Generamos un authentication header para identificarnos contra Elasticsearch
         HashMap<String, String> headerMap = new HashMap<String, String>();
         headerMap.put("Authorization", Credentials.basic("android",
@@ -400,16 +388,15 @@ public class SignupActivity extends AppCompatActivity {
         String searchString = "";
         try {
             //Este es el JSON en el que especificamos los parámetros de la búsqueda
-            queryJson = "{\n"+
-                    "\"correousu\":\"" + correo + "\",\n" +
-                    "\"nombre\":\"" + nombre + "\",\n" +
-                    "\"fechaNac\":\""+ fechaNac + "\",\n" +
-                    "\"primUbic\":\"" + coords + "\",\n" +
-                    "\"discapaz\":\"" + 0 + "\"\n" +
+            queryJson = "{\n" +
+                    "  \"correousu\":\"" + correo + "\",\n" +
+                    "  \"fechaNac\":\"" + fechaNac + "\",\n" +
+                    "  \"ubicacion\":\"" + coords + "\",\n" +
+                    "  \"nombre\":\"" + nombre + "\"\n" +
                     "}";
             jsonObject = new JSONObject(queryJson);
         }catch (JSONException jerr){
-            Log.d("Error: ", jerr.toString());
+            Log.d("Error en registro de usuario: ", jerr.toString());
         }
         //Creamos el body con el JSON
         RequestBody body = RequestBody.create(okhttp3.MediaType
@@ -430,6 +417,7 @@ public class SignupActivity extends AppCompatActivity {
                         System.out.println(respuestaU.getIndex());
                         Log.d(TAG, " -----------onResponse: la response: " + response.body()
                                 .toString());
+                        finish();
                     }else{
                         jsonResponse = response.errorBody().string(); //error response body
                         System.out.println("Response body: " + jsonResponse);

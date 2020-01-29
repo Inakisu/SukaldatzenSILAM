@@ -484,6 +484,8 @@ public class VisualizationFragment extends Fragment {
     }
 
     private void enviarABD(String correo, String macdispBT, int temperatura, int girado, int lleno){
+        Log.i("enviarABD","Correo:"+ correo + ", MAC: " + macdispBT + ", Tª:" +
+                temperatura + ", Girado:" + girado + ", Lleno:" + lleno);
         //Generamos un authentication header para identificarnos contra Elasticsearch
         HashMap<String, String> headerMap = new HashMap<String, String>();
         headerMap.put("Authorization", Credentials.basic("android",
