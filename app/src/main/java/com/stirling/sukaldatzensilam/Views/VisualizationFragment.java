@@ -29,6 +29,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -43,10 +45,12 @@ import com.stirling.sukaldatzensilam.Utils.Constants;
 import com.stirling.sukaldatzensilam.Utils.ElasticSearchAPI;
 import com.stirling.sukaldatzensilam.Utils.Notifications;
 
+import org.elasticsearch.common.recycler.Recycler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -69,13 +73,15 @@ public class VisualizationFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     SharedPreferences preferences;
-
+    public List<BluetoothGattCharacteristic> listaChars = new ArrayList<>();
     private int NUM_OF_COUNT;
     private boolean alTAct = false;
     private boolean seguir = false;
     private boolean rCorriendo = false;
     private int temp;
     private String tempString;
+    private boolean girado;
+    private boolean lleno;
     private float mil = 0;
     private Handler handler;
     private int minutosTemp = 0;
@@ -88,8 +94,12 @@ public class VisualizationFragment extends Fragment {
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     BluetoothGatt mBluetoothGatt;
     BluetoothDevice bDevice;
+    BluetoothGattService gattServiceD;
+
     private static final int REQUEST_ENABLE_BT = 1;
     private String charUUID = "f547a45c-5264-486a-b107-11db9099ded0"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
+    private String charUUID2 = "f547a45c-5264-486a-b107-11db9099ded2"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
+    private String charUUID3 = "f547a45c-5264-486a-b107-11db9099ded3"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
     private FirebaseAuth mAuth;
     private Retrofit retrofit;
     private ElasticSearchAPI searchAPI;
@@ -98,6 +108,8 @@ public class VisualizationFragment extends Fragment {
     private String queryJson = "";
     private JSONObject jsonObject;
     private String correoUsuario;
+
+    Animation animRotar1;
 
 
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
@@ -112,6 +124,8 @@ public class VisualizationFragment extends Fragment {
             seekBarTemp;
     @BindView(R.id.timeAlarm)    TextView timeAlarm;
     @BindView(R.id.imgTupper2) ImageView MyImageView;
+    @BindView(R.id.imgTupperLlenoFrio) ImageView tupperFrio;
+    @BindView(R.id.imgTupperLlenoCaliente) ImageView tupperCaliente;
     @BindView(R.id.temperatureIndicator) CustomTextView tvTemperature;
 
     /**
@@ -136,6 +150,11 @@ public class VisualizationFragment extends Fragment {
         SharedPreferences
                 preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
+
+        //Inicializamos rotacion1
+        animRotar1 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
+                R.anim.rotar1);
+        //Obtenemos dirección mac desde shared preferences
         macbt = preferences.getString("macbt", null);
         //Inicializar API
         inicializarAPI();
@@ -206,8 +225,7 @@ public class VisualizationFragment extends Fragment {
             };
 
     /**
-     * Método encargado de escanear en busca de dispositivos Bluetooth
-     * Low Energy.
+     * Método encargado de escanear dispositivos Bluetooth Low Energy
      *
      * @param enable Parameter 1.
      */
@@ -284,8 +302,9 @@ public class VisualizationFragment extends Fragment {
             BluetoothGattCharacteristic characTemp = null;
             for(BluetoothGattService ser : services){
                 //if(ser.getUuid().equals(serviceUUID)){
-                BluetoothGattService gattService = services.get(2);
-                characTemp = gattService.getCharacteristic(UUID.fromString(charUUID));
+                gattServiceD = services.get(2);
+
+               /* characTemp = gattService.getCharacteristic(UUID.fromString(charUUID));
                     try{
                         gatt.readCharacteristic(characTemp);
                         gatt.setCharacteristicNotification(characTemp, true);
@@ -297,29 +316,88 @@ public class VisualizationFragment extends Fragment {
                         }
                     }catch (Exception e){
                         Log.e("readFrag", "Error: " + e);
-                    }
+                    }*/
             }
+
+            //Añadimos las características a la lista
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID2)));
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));
+
+            requestCharacteristics(gatt);
 
         }
 
         @Override
-        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            // my attempt to read and print characteristics
-            Log.i("infoFrag", "onCharacteristicRead");
-            tempString = characteristic.getStringValue(0);
-            temp = Integer.parseInt(tempString);
-            Log.i("BLEFragOnCharRead", "Characteristic: " + tempString); //dataInput
-            //gatt.disconnect();
+        public void onCharacteristicRead(BluetoothGatt gatt,
+                                         BluetoothGattCharacteristic characteristic, int status) {
+            Log.i("onCharRead","Entrado === BBBBB");
+
+            girado = false;
+            lleno = false;
+
+            if(characteristic.getUuid().toString().equals(charUUID)){
+                Log.i("onCharRead","charUUID === BBBBB");
+                // my attempt to read and print characteristics
+//                Log.i("infoFrag", "onCharacteristicRead");
+                tempString = characteristic.getStringValue(0);
+                //temp = 0;
+                temp = Integer.parseInt(tempString);
+                Log.i("BLEFragOnCharRead", "Characteristic: " + tempString); //dataInput
+                //gatt.disconnect();
+            }else if(characteristic.getUuid().toString().equals(charUUID2)){
+                Log.i("onCharRead","charUUID2 === BBBBB");
+
+                if(characteristic.getStringValue(0).equals("1")){
+                    girado = true;
+                }else{
+                    girado = false;
+                }
+                Log.i("BLEFragOnCharRead", "Characteristic: " + characteristic.getStringValue(0)); //dataInput
+
+            }else if(characteristic.getUuid().toString().equals(charUUID3)){
+                Log.i("onCharRead","charUUID3 === BBBBB");
+
+                if(characteristic.getStringValue(0).equals("1")){
+                    lleno = true;
+                }else{
+                    lleno = false;
+                }
+                Log.i("BLEFragOnCharRead", "Characteristic: " + characteristic.getStringValue(0)); //dataInput
+
+            }else{
+                Log.e("BLE Read: ","Ninguna característica coincide con el UUID " +
+                        "proporcionado");
+            }
+
+            listaChars.remove(listaChars.get(listaChars.size() - 1));
+
+            if (listaChars.size() > 0) {
+                requestCharacteristics(gatt);
+            }
+        }
+        public void requestCharacteristics(BluetoothGatt gatt) {
+            gatt.readCharacteristic(listaChars.get(listaChars.size()-1));
+            Log.i("requestCharRead","Llamado === BBBBB");
         }
         @Override
         public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
                                                          BluetoothGattCharacteristic characteristic) {
 
-            Log.i("infoFrag", "onCharacteristicChanged");
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID2)));
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));
+
+            requestCharacteristics(gatt);
+
+
+
+            /*Log.i("infoFrag", "onCharacteristicChanged");
             gatt.discoverServices();
             tempString = characteristic.getStringValue(0);
+            //temp = 0;
             temp = Integer.parseInt(tempString);
-            Log.i("BLEFragOnCharChanged", "Characteristic: " + tempString);
+            Log.i("BLEFragOnCharChanged", "Characteristic: " + tempString);*/
 
         }
     };
@@ -340,6 +418,10 @@ public class VisualizationFragment extends Fragment {
 
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
+        //Inicializamos imágenes
+        MyImageView.setVisibility(View.VISIBLE);
+        tupperFrio.setVisibility(View.GONE);
+        tupperCaliente.setVisibility(View.GONE);
 
         //Boton poner alamra temperatura
         bSetTemperatureAlarm.setOnClickListener(new View.OnClickListener()
@@ -399,13 +481,19 @@ public class VisualizationFragment extends Fragment {
         new Runnable() {
             @Override
             public void run() {
-                handler.postDelayed(this, 3 * 1000); // cada 3 segundos
+                handler.postDelayed(this, 2 * 1000); // cada 3 segundos
                 //lo que queremos que haga cada tres segundos
                 Log.i("info", "Loop de 3 segundos");
                 comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
-                enviarABD(correoUsuario, macbt, temp, 0,0);
+                int l = 0;
+                int g = 0;
+                if(girado)
+                    g=1;
+                if(lleno)
+                    l=1;
+                enviarABD(correoUsuario, macbt, temp, g,l);
             }
         }.run();
     }
@@ -472,6 +560,36 @@ public class VisualizationFragment extends Fragment {
             }
         }catch (Exception e){
             Log.e("Actual. Color: ", "Excep.: " + e);
+        }
+    }
+    /**
+    * Se verifica la posición (girado o no) del tupper y si está lleno o vacío
+    *
+    * */
+    public void verificarEstado(){
+        //actualizamos las variables
+
+        //aplicamos los cambios
+        if(!girado){ //no está girado
+            MyImageView.clearAnimation();
+            MyImageView.setVisibility(View.VISIBLE);
+            tupperFrio.setVisibility(View.GONE);
+            tupperCaliente.setVisibility(View.GONE);
+        }else if(girado && !lleno){ //girado y vacío
+            MyImageView.setVisibility(View.VISIBLE);
+            MyImageView.startAnimation(animRotar1);
+        }else if(girado && lleno && temp < 50){ //girado, lleno y frío
+            MyImageView.clearAnimation();
+            MyImageView.setVisibility(View.GONE);
+            tupperFrio.setVisibility(View.VISIBLE);
+            tupperCaliente.setVisibility(View.GONE);
+        }else if(girado && lleno && temp > 50){//girado, lleno y caliente
+            MyImageView.clearAnimation();
+            MyImageView.setVisibility(View.GONE);
+            tupperFrio.setVisibility(View.GONE);
+            tupperCaliente.setVisibility(View.VISIBLE);
+        }else{
+
         }
     }
 

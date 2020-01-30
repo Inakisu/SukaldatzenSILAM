@@ -125,8 +125,8 @@ public  class MainUserActivity extends AppCompatActivity {
 
 
     /**************************************************************************
-     *  /name: openNewFragment
-     *  /brief: This method opens the specified fragment in parameters
+     *  /name: openNewFragment                                                *
+     *  /brief: This method opens the specified fragment in parameters        *
      **************************************************************************/
     public void openNewFragment(Fragment fragment, String fragmentTitle, Bundle extras,
                                 boolean addToBackStack)

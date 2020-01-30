@@ -25,6 +25,40 @@
         tools:layout_conversion_absoluteHeight="160dp"
         tools:layout_conversion_absoluteWidth="343dp" />
 
+    <ImageView
+        android:id="@+id/imgTupperLlenoFrio"
+        android:layout_width="343dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/frio"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_conversion_absoluteHeight="160dp"
+        tools:layout_conversion_absoluteWidth="343dp" />
+
+    <ImageView
+        android:id="@+id/imgTupperLlenoCaliente"
+        android:layout_width="343dp"
+        android:layout_height="160dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/caliente"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_conversion_absoluteHeight="160dp"
+        tools:layout_conversion_absoluteWidth="343dp" />
+
     <LinearLayout
         android:id="@+id/alarmLayout"
         android:layout_width="wrap_content"
