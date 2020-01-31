@@ -90,6 +90,7 @@ public class VisualizationFragment extends Fragment {
     private boolean mScanning;
     Runnable runnable;
     private Handler mHandler;
+    private int t;
 
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     BluetoothGatt mBluetoothGatt;
@@ -150,7 +151,7 @@ public class VisualizationFragment extends Fragment {
         SharedPreferences
                 preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
-
+        t = 0;
         //Inicializamos rotacion1
         animRotar1 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
                 R.anim.rotar1);
@@ -278,6 +279,7 @@ public class VisualizationFragment extends Fragment {
      * Callbacks que suceden en determinados eventos relacionados con el BT LE.
      */
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
+
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             Log.i("BLEFrag", "Status: " + status);
@@ -288,6 +290,7 @@ public class VisualizationFragment extends Fragment {
                     gatt.discoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
+                    //scanLeDevice(true);
                     Log.e("BLEFrag", "STATE_DISCONNECTED");
                     break;
                 default:
@@ -300,29 +303,89 @@ public class VisualizationFragment extends Fragment {
             List<BluetoothGattService> services = gatt.getServices();
             Log.i("BLEFrag", "Services: " + services.toString());
             BluetoothGattCharacteristic characTemp = null;
-            for(BluetoothGattService ser : services){
-                //if(ser.getUuid().equals(serviceUUID)){
-                gattServiceD = services.get(2);
+            BluetoothGattCharacteristic characGiro = null;
+            BluetoothGattCharacteristic characLleno = null;
 
-               /* characTemp = gattService.getCharacteristic(UUID.fromString(charUUID));
+            gattServiceD = services.get(2);
+
+            characLleno = gattServiceD.getCharacteristic(UUID.fromString(charUUID2));
+            characGiro = gattServiceD.getCharacteristic(UUID.fromString(charUUID3));
+            characTemp = gattServiceD.getCharacteristic(UUID.fromString(charUUID));
+             listaChars.add(characTemp);
+             listaChars.add(characGiro);
+             listaChars.add(characLleno);
+
+            /*switch (t){
+                case 0:
                     try{
-                        gatt.readCharacteristic(characTemp);
-                        gatt.setCharacteristicNotification(characTemp, true);
+                        Log.i("read","characGiro");
+                        gatt.readCharacteristic(characGiro);
                         try {
-                            sleep(600);
+                            Thread.sleep(500);
+                        }catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        //gatt.setCharacteristicNotification(characGiro, true);
+                        try {
+                            Thread.sleep(600);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                             Log.e("onServDiscFrag", "Error sleep: "+ e);
                         }
                     }catch (Exception e){
                         Log.e("readFrag", "Error: " + e);
-                    }*/
-            }
+                    }
+                    t++;
+                    break;
+                case 1:
+                    try{
+                        Log.i("read","characTemp");
+                        gatt.readCharacteristic(characTemp);
+                        try {
+                            Thread.sleep(500);
+                        }catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        gatt.setCharacteristicNotification(characTemp, true);
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Log.e("onServDiscFrag", "Error sleep: "+ e);
+                        }
+                    }catch (Exception e){
+                        Log.e("readFrag", "Error: " + e);
+                    }
+                    break;
+                case 2:
+                    try{
+                        Log.i("read","characLleno");
+                        gatt.readCharacteristic(characLleno);
+                        try {
+                            Thread.sleep(500);
+                        }catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        //gatt.setCharacteristicNotification(characLleno, true);
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Log.e("onServDiscFrag", "Error sleep: "+ e);
+                        }
+                    }catch (Exception e){
+                        Log.e("readFrag", "Error: " + e);
+                    }
+                    break;
+                case 3:
+                    t=0;
+                    break;
+            }*/
 
             //Añadimos las características a la lista
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
+            /*listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
             listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID2)));
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));
+            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));*/
 
             requestCharacteristics(gatt);
 
@@ -332,9 +395,6 @@ public class VisualizationFragment extends Fragment {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic, int status) {
             Log.i("onCharRead","Entrado === BBBBB");
-
-            girado = false;
-            lleno = false;
 
             if(characteristic.getUuid().toString().equals(charUUID)){
                 Log.i("onCharRead","charUUID === BBBBB");
@@ -349,9 +409,9 @@ public class VisualizationFragment extends Fragment {
                 Log.i("onCharRead","charUUID2 === BBBBB");
 
                 if(characteristic.getStringValue(0).equals("1")){
-                    girado = true;
+                    lleno = true;
                 }else{
-                    girado = false;
+                    lleno = false;
                 }
                 Log.i("BLEFragOnCharRead", "Characteristic: " + characteristic.getStringValue(0)); //dataInput
 
@@ -359,9 +419,9 @@ public class VisualizationFragment extends Fragment {
                 Log.i("onCharRead","charUUID3 === BBBBB");
 
                 if(characteristic.getStringValue(0).equals("1")){
-                    lleno = true;
+                    girado = true;
                 }else{
-                    lleno = false;
+                    girado = false;
                 }
                 Log.i("BLEFragOnCharRead", "Characteristic: " + characteristic.getStringValue(0)); //dataInput
 
@@ -374,30 +434,38 @@ public class VisualizationFragment extends Fragment {
 
             if (listaChars.size() > 0) {
                 requestCharacteristics(gatt);
+            }else{
+                //gatt.disconnect();
+                try {
+                    Thread.sleep(1000);
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                gatt.discoverServices();
             }
         }
         public void requestCharacteristics(BluetoothGatt gatt) {
             gatt.readCharacteristic(listaChars.get(listaChars.size()-1));
-            Log.i("requestCharRead","Llamado === BBBBB");
+            Log.i("requestCharRead","Llamado === RRRRRRR");
         }
         @Override
         public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
                                                          BluetoothGattCharacteristic characteristic) {
 
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
+            /*listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
             listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID2)));
             listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));
 
-            requestCharacteristics(gatt);
+            requestCharacteristics(gatt);*/
 
 
 
-            /*Log.i("infoFrag", "onCharacteristicChanged");
+            Log.i("infoFrag", "onCharacteristicChanged");
             gatt.discoverServices();
-            tempString = characteristic.getStringValue(0);
+            //tempString = characteristic.getStringValue(0);
             //temp = 0;
-            temp = Integer.parseInt(tempString);
-            Log.i("BLEFragOnCharChanged", "Characteristic: " + tempString);*/
+            //temp = Integer.parseInt(tempString);
+            Log.i("BLEFragOnCharChanged", "Characteristic: " + tempString);
 
         }
     };
@@ -487,6 +555,9 @@ public class VisualizationFragment extends Fragment {
                 comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
+                if (macbt != null && !isScanning() && bDevice==null) {
+                    scanLeDevice(true);
+                }
                 int l = 0;
                 int g = 0;
                 if(girado)
