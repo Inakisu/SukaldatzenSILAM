@@ -91,6 +91,7 @@ public class VisualizationFragment extends Fragment {
     Runnable runnable;
     private Handler mHandler;
     private int t;
+    private boolean estabaGirado;
 
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     BluetoothGatt mBluetoothGatt;
@@ -555,6 +556,7 @@ public class VisualizationFragment extends Fragment {
                 comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
+                verificarEstado();
                 if (macbt != null && !isScanning() && bDevice==null) {
                     scanLeDevice(true);
                 }
@@ -646,16 +648,45 @@ public class VisualizationFragment extends Fragment {
             MyImageView.setVisibility(View.VISIBLE);
             tupperFrio.setVisibility(View.GONE);
             tupperCaliente.setVisibility(View.GONE);
+            estabaGirado = false;
         }else if(girado && !lleno){ //girado y vacío
-            MyImageView.setVisibility(View.VISIBLE);
-            MyImageView.startAnimation(animRotar1);
-        }else if(girado && lleno && temp < 50){ //girado, lleno y frío
-            MyImageView.clearAnimation();
+            if(!estabaGirado){
+                MyImageView.setVisibility(View.VISIBLE);
+                MyImageView.startAnimation(animRotar1);
+                try {
+                    sleep(1950);
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                estabaGirado = true;
+            }
+        }else if(girado && lleno && temp < 23){ //girado, lleno y frío
+            //MyImageView.clearAnimation();
+            if(!estabaGirado){
+                MyImageView.startAnimation(animRotar1);
+                try {
+                    sleep(1950);
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                estabaGirado = true;
+            }
             MyImageView.setVisibility(View.GONE);
             tupperFrio.setVisibility(View.VISIBLE);
             tupperCaliente.setVisibility(View.GONE);
-        }else if(girado && lleno && temp > 50){//girado, lleno y caliente
-            MyImageView.clearAnimation();
+        }else if(girado && lleno && temp > 23){//girado, lleno y caliente
+            if(!estabaGirado){
+                MyImageView.startAnimation(animRotar1);
+                try {
+                    sleep(1950);
+                }catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                MyImageView.setVisibility(View.GONE);
+                tupperFrio.setVisibility(View.GONE);
+                tupperCaliente.setVisibility(View.VISIBLE);
+                estabaGirado = true;
+            }
             MyImageView.setVisibility(View.GONE);
             tupperFrio.setVisibility(View.GONE);
             tupperCaliente.setVisibility(View.VISIBLE);
