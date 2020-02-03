@@ -20,7 +20,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,6 +28,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
@@ -36,7 +36,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
 import com.google.firebase.auth.FirebaseAuth;
 import com.libRG.CustomTextView;
 import com.stirling.sukaldatzensilam.Models.POJOs.RespuestaU;
@@ -45,7 +44,6 @@ import com.stirling.sukaldatzensilam.Utils.Constants;
 import com.stirling.sukaldatzensilam.Utils.ElasticSearchAPI;
 import com.stirling.sukaldatzensilam.Utils.Notifications;
 
-import org.elasticsearch.common.recycler.Recycler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -80,8 +78,7 @@ public class VisualizationFragment extends Fragment {
     private boolean rCorriendo = false;
     private int temp;
     private String tempString;
-    private boolean girado;
-    private boolean lleno;
+
     private float mil = 0;
     private Handler handler;
     private int minutosTemp = 0;
@@ -91,7 +88,12 @@ public class VisualizationFragment extends Fragment {
     Runnable runnable;
     private Handler mHandler;
     private int t;
-    private boolean estabaGirado;
+    /*private boolean estabaGiradoVacio;
+    private boolean estabaAzul;
+    private boolean estabaRojo;
+    private boolean estabaVacio;*/
+    private boolean girado;
+    private boolean lleno;
 
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     BluetoothGatt mBluetoothGatt;
@@ -111,7 +113,10 @@ public class VisualizationFragment extends Fragment {
     private JSONObject jsonObject;
     private String correoUsuario;
 
-    Animation animRotar1;
+    /*Animation animRotar1;
+    Animation animRotar3;
+    Animation animFadeOut;
+    Animation animFadeIn;*/
 
 
     int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
@@ -125,7 +130,8 @@ public class VisualizationFragment extends Fragment {
     @BindView(R.id.alarmTemperatureSeekbar) org.adw.library.widgets.discreteseekbar.DiscreteSeekBar
             seekBarTemp;
     @BindView(R.id.timeAlarm)    TextView timeAlarm;
-    @BindView(R.id.imgTupper2) ImageView MyImageView;
+    @BindView(R.id.imgTupper2) ImageView tupperVacio;
+    @BindView(R.id.imgTupper2girado) ImageView tupperVacioGirado;
     @BindView(R.id.imgTupperLlenoFrio) ImageView tupperFrio;
     @BindView(R.id.imgTupperLlenoCaliente) ImageView tupperCaliente;
     @BindView(R.id.temperatureIndicator) CustomTextView tvTemperature;
@@ -153,9 +159,198 @@ public class VisualizationFragment extends Fragment {
                 preferences = getActivity().getBaseContext().getSharedPreferences("preferencias",
                 Context.MODE_PRIVATE);
         t = 0;
-        //Inicializamos rotacion1
-        animRotar1 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
+        temp = 0;
+        //Inicializamos las animaciones y sus respectivos listerners
+        /*animRotar1 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
                 R.anim.rotar1);
+        animRotar3 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
+                R.anim.rotar3);
+        animRotar1.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                tupperVacio.setVisibility(View.VISIBLE);
+                tupperFrio.setVisibility(View.GONE);
+                tupperCaliente.setVisibility(View.GONE);
+                tupperVacioGirado.setVisibility(View.GONE);
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                tupperVacio.setVisibility(View.GONE);
+                tupperFrio.setVisibility(View.GONE);
+                tupperCaliente.setVisibility(View.GONE);
+                tupperVacioGirado.setVisibility(View.VISIBLE);
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animRotar3.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                tupperVacio.setVisibility(View.GONE);
+                tupperFrio.setVisibility(View.GONE);
+                tupperCaliente.setVisibility(View.GONE);
+                tupperVacioGirado.setVisibility(View.VISIBLE);
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                tupperVacio.setVisibility(View.VISIBLE);
+                tupperFrio.setVisibility(View.GONE);
+                tupperCaliente.setVisibility(View.GONE);
+                tupperVacioGirado.setVisibility(View.GONE);
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animFadeOut = new AlphaAnimation(1.0f, 0.0f);
+        animFadeOut.setDuration(900);
+        animFadeOut.setRepeatCount(0); //sólo quiero que se ejecute una vez, así que 0 ¿?
+        animFadeOut.setRepeatMode(Animation.REVERSE);
+        animFadeOut.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                if(estabaGiradoVacio){
+                    tupperVacio.setVisibility(View.VISIBLE);
+                }else if(estabaAzul) {
+
+                }else if (estabaRojo){
+                    tupperCaliente.setVisibility(View.GONE);
+                }
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(!girado){ //no está girado
+                    if(estabaGiradoVacio){
+                    }else if (estabaAzul){
+                    }else if (estabaRojo){
+                    }else if (estabaVacio){
+                        //nada
+                    }
+                }else if(girado && !lleno){ //girado y vacío
+                    if(estabaGiradoVacio){
+                        //nada
+                    }else if (estabaAzul){
+                        tupperFrio.setVisibility(View.GONE);
+                        estabaAzul = false;
+                    }else if (estabaRojo){
+                        tupperCaliente.setVisibility(View.GONE);
+                    }else if (estabaVacio){
+                    }
+                }else if(girado && lleno && temp < 23){ //girado, lleno y frío
+                    if(estabaGiradoVacio){
+                        tupperVacio.setVisibility(View.GONE);
+                    }else if (estabaAzul){
+                        //nada
+                    }else if (estabaRojo){
+                        tupperCaliente.setVisibility(View.GONE);
+                        estabaRojo = false;
+                   }else if (estabaVacio){
+                        //hacer visible azul
+                    }
+                }else if(girado && lleno && temp > 23){//girado, lleno y caliente
+                    if(estabaGiradoVacio){
+                    }else if (estabaAzul){
+                    }else if (estabaRojo){
+                        //nada
+                    }else if (estabaVacio){
+                    }
+                }
+
+
+               *//* if(estabaGiradoVacio){
+                    tupperVacio.setVisibility(View.GONE);
+                    tupperCaliente.setVisibility(View.GONE);
+                }else if (estabaRojo){
+                    tupperVacio.setVisibility(View.GONE);
+                    tupperCaliente.setVisibility(View.GONE);
+                }else if (estabaAzul){
+                    tupperFrio.setVisibility(View.GONE);
+                    tupperCaliente.setVisibility(View.GONE);
+                }*//*
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        animFadeIn = new AlphaAnimation(0.0f, 1.0f);
+        animFadeIn.setDuration(900);
+        animFadeIn.setRepeatCount(0); //lo mismo que el de out
+        animFadeIn.setRepeatMode(Animation.REVERSE);
+        animFadeIn.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                if(girado && !lleno){ //girado y vacío
+                    if(estabaGiradoVacio){
+                        //nada
+                    }else if (estabaAzul){
+                        tupperVacio.setVisibility(View.VISIBLE);
+                    }else if (estabaRojo){
+                        tupperVacio.setVisibility(View.VISIBLE);
+                    }
+                }else if(girado && lleno && temp < 23){ //girado, lleno y frío
+                    if(estabaGiradoVacio){
+                        tupperFrio.setVisibility(View.VISIBLE);
+                    }else if (estabaAzul){
+                        //nada
+                    }else if (estabaRojo){
+                    }else if (estabaVacio){
+                        tupperFrio.setVisibility(View.VISIBLE);
+                    }
+                }else if(girado && lleno && temp > 23){//girado, lleno y caliente
+                    if(estabaGiradoVacio){
+
+                    }else if (estabaAzul){
+
+                    }else if (estabaRojo){
+                        //nada
+                    }
+                }
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if(girado && !lleno){ //girado y vacío
+                    if(estabaGiradoVacio){
+                        //nada
+                    }else if (estabaAzul){
+                        tupperFrio.startAnimation(animFadeOut);
+                    }else if (estabaRojo){
+                        estabaRojo = false;
+                    }else if (estabaVacio){
+
+                    }
+                }else if(girado && lleno && temp < 23){ //girado, lleno y frío
+                    if(estabaGiradoVacio){
+                        estabaAzul = true;
+                        estabaGiradoVacio = false;
+                    }else if (estabaAzul){
+                        //nada
+                    }else if (estabaRojo){
+
+                    }else if (estabaVacio){
+
+                        estabaVacio = false;
+                    }
+                }else if(girado && lleno && temp > 23){//girado, lleno y caliente
+                    if(estabaGiradoVacio){
+
+                    }else if (estabaAzul){
+
+                    }else if (estabaRojo){
+                        //nada
+                    }else if (estabaVacio){
+                    }
+                }
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });*/
+
         //Obtenemos dirección mac desde shared preferences
         macbt = preferences.getString("macbt", null);
         //Inicializar API
@@ -488,7 +683,7 @@ public class VisualizationFragment extends Fragment {
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
         //Inicializamos imágenes
-        MyImageView.setVisibility(View.VISIBLE);
+        tupperVacio.setVisibility(View.VISIBLE);
         tupperFrio.setVisibility(View.GONE);
         tupperCaliente.setVisibility(View.GONE);
 
@@ -640,58 +835,29 @@ public class VisualizationFragment extends Fragment {
     *
     * */
     public void verificarEstado(){
-        //actualizamos las variables
-
         //aplicamos los cambios
         if(!girado){ //no está girado
-            MyImageView.clearAnimation();
-            MyImageView.setVisibility(View.VISIBLE);
-            tupperFrio.setVisibility(View.GONE);
+            tupperVacio.setVisibility(View.VISIBLE);
             tupperCaliente.setVisibility(View.GONE);
-            estabaGirado = false;
+            tupperFrio.setVisibility(View.GONE);
+            tupperVacioGirado.setVisibility(View.GONE);
         }else if(girado && !lleno){ //girado y vacío
-            if(!estabaGirado){
-                MyImageView.setVisibility(View.VISIBLE);
-                MyImageView.startAnimation(animRotar1);
-                try {
-                    sleep(1950);
-                }catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                estabaGirado = true;
-            }
-        }else if(girado && lleno && temp < 23){ //girado, lleno y frío
-            //MyImageView.clearAnimation();
-            if(!estabaGirado){
-                MyImageView.startAnimation(animRotar1);
-                try {
-                    sleep(1950);
-                }catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                estabaGirado = true;
-            }
-            MyImageView.setVisibility(View.GONE);
-            tupperFrio.setVisibility(View.VISIBLE);
+            tupperVacio.setVisibility(View.GONE);
             tupperCaliente.setVisibility(View.GONE);
-        }else if(girado && lleno && temp > 23){//girado, lleno y caliente
-            if(!estabaGirado){
-                MyImageView.startAnimation(animRotar1);
-                try {
-                    sleep(1950);
-                }catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                MyImageView.setVisibility(View.GONE);
-                tupperFrio.setVisibility(View.GONE);
-                tupperCaliente.setVisibility(View.VISIBLE);
-                estabaGirado = true;
-            }
-            MyImageView.setVisibility(View.GONE);
             tupperFrio.setVisibility(View.GONE);
+            tupperVacioGirado.setVisibility(View.VISIBLE);
+        }else if(girado && lleno && temp < 23){ //girado, lleno y frío
+            tupperVacio.setVisibility(View.GONE);
+            tupperCaliente.setVisibility(View.GONE);
+            tupperFrio.setVisibility(View.VISIBLE);
+            tupperVacioGirado.setVisibility(View.GONE);
+        }else if(girado && lleno && temp > 23){//girado, lleno y caliente
+            tupperVacio.setVisibility(View.GONE);
             tupperCaliente.setVisibility(View.VISIBLE);
+            tupperFrio.setVisibility(View.GONE);
+            tupperVacioGirado.setVisibility(View.GONE);
         }else{
-
+            //qué? tanto if else que ya ni sé
         }
     }
 
