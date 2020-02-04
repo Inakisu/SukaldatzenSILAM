@@ -773,6 +773,7 @@ public class VisualizationFragment extends Fragment {
                         "Temperatura tupper", "Temperatura consigna alcanzada");
                 bSetTemperatureAlarm.setText("Activar");
                 alTAct =false;
+                seekBarTemp.setProgress(0);
             }
         }
     }
