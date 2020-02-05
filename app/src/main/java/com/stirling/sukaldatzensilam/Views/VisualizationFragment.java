@@ -654,8 +654,6 @@ public class VisualizationFragment extends Fragment {
 
             requestCharacteristics(gatt);*/
 
-
-
             Log.i("infoFrag", "onCharacteristicChanged");
             gatt.discoverServices();
             //tempString = characteristic.getStringValue(0);
@@ -730,6 +728,7 @@ public class VisualizationFragment extends Fragment {
                     bSetTimeAlarm.setText("Activar");
                     seguir = false;
                     timeAlarm.setText(Html.fromHtml(" "));
+                    seekBarTime.setProgress(0);
                 }
                 timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
                         seekBarTime.getProgress() + "min."));
@@ -770,7 +769,7 @@ public class VisualizationFragment extends Fragment {
         if(activada){
             if(temp>=seekBarTemp.getProgress()){
                 Notifications.show(getActivity(), VisualizationFragment.class,
-                        "Temperatura tupper", "Temperatura consigna alcanzada");
+                        "Tupper Silam", "Temperatura de consigna alcanzada");
                 bSetTemperatureAlarm.setText("Activar");
                 alTAct =false;
                 seekBarTemp.setProgress(0);
@@ -811,14 +810,14 @@ public class VisualizationFragment extends Fragment {
         int temp3 = getResources().getInteger(R.integer.tempRojaMayorQue);
         try {
             if (temp < temp1) {
-                tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempVerde));
+                tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempAzul));
                 if(temp==0) {
                     tvTemperature.setBackgroundColor(getContext()
                             .getColor(R.color.material_grey300));
                 }
             } else if (temp1 <= temp && temp < temp2) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempAmarillo));
-            } else if (temp <= temp3) {
+            } else if (temp >= temp3) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempRojo));
             } else {
                 if(temp==0){
@@ -847,12 +846,12 @@ public class VisualizationFragment extends Fragment {
             tupperCaliente.setVisibility(View.GONE);
             tupperFrio.setVisibility(View.GONE);
             tupperVacioGirado.setVisibility(View.VISIBLE);
-        }else if(girado && lleno && temp < 23){ //girado, lleno y frío
+        }else if(girado && lleno && temp < 30){ //girado, lleno y frío
             tupperVacio.setVisibility(View.GONE);
             tupperCaliente.setVisibility(View.GONE);
             tupperFrio.setVisibility(View.VISIBLE);
             tupperVacioGirado.setVisibility(View.GONE);
-        }else if(girado && lleno && temp > 23){//girado, lleno y caliente
+        }else if(girado && lleno && temp > 30){//girado, lleno y caliente
             tupperVacio.setVisibility(View.GONE);
             tupperCaliente.setVisibility(View.VISIBLE);
             tupperFrio.setVisibility(View.GONE);
@@ -966,7 +965,7 @@ public class VisualizationFragment extends Fragment {
                     "Finalizado"));
             seekBarTime.setMax(30);
             Notifications.show(getActivity(), VisualizationFragment.class,
-                    "Temporizador tupper", "El temporizador ha finalizado.");
+                    "Tupper Silam", "El temporizador ha finalizado.");
             bSetTimeAlarm.setText("Activar");
         }
 
@@ -975,6 +974,7 @@ public class VisualizationFragment extends Fragment {
             if(!seguir){
                 this.cancel();
                 seekBarTime.setMax(30);
+                seekBarTime.setProgress(0);
             }
             millisCounter = millisCounter - 1000;
             mil = millisCounter /60 / 1000;
@@ -984,6 +984,10 @@ public class VisualizationFragment extends Fragment {
             long timeRemaining = millisUntilFinished;
             seekBarTime.setProgress((int) (timeRemaining));
             //Log.i(TAG, "Time tick: " + millisUntilFinished);
+            if(!seguir){
+                seekBarTime.setMax(30);
+                seekBarTime.setProgress(0);
+            }
         }
     }
 }

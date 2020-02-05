@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="tempVerdeMenorQue">40</integer>
-    <integer name="tempAmarillaMayVerMenQue">60</integer>
-    <integer name="tempRojaMayorQue">70</integer>
+    <integer name="tempVerdeMenorQue">30</integer>
+    <integer name="tempAmarillaMayVerMenQue">45</integer>
+    <integer name="tempRojaMayorQue">45</integer>
 </resources>
