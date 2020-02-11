@@ -124,7 +124,7 @@
                         android:gravity="center"
                         android:text="Activar"
                         android:textColor="#ffffffff"
-                        android:textSize="10dp"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:visibility="visible"
                         app:lib_enable_ripple_effect="true"
@@ -155,7 +155,8 @@
                     android:gravity="center"
                     android:padding="5dp"
                     android:text="Alarma temperatura"
-                    android:textColor="#ffffffff" />
+                    android:textColor="#ffffffff"
+                    android:textSize="18sp" />
 
             </LinearLayout>
 
@@ -185,14 +186,14 @@
 
                     <com.libRG.CustomTextView
                         android:id="@+id/bSetTime"
-                        android:layout_width="43dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="25dp"
                         android:layout_margin="5dp"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="Activar"
                         android:textColor="#ffffffff"
-                        android:textSize="10dp"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:visibility="visible"
                         app:lib_enable_ripple_effect="true"
@@ -225,7 +226,8 @@
                     android:gravity="center"
                     android:padding="5dp"
                     android:text="Temporizador (mins.)"
-                    android:textColor="#ffffffff" />
+                    android:textColor="#ffffffff"
+                    android:textSize="18sp" />
 
             </LinearLayout>
 

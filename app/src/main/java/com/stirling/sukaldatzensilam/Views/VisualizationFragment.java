@@ -455,7 +455,8 @@ public class VisualizationFragment extends Fragment {
      */
     public void connectToDevice(BluetoothDevice device) {
         if (mBluetoothGatt == null) {
-            Log.i("BLEFrag", "Attempting to connect to device " + device.getName() + " (" + device.getAddress() + ")");
+            Log.i("BLEFrag", "Attempting to connect to device " + device.getName() +
+                    " (" + device.getAddress() + ")");
             mBluetoothGatt = device.connectGatt(getActivity(), true, gattCallback);
             try {
                 sleep(600);
