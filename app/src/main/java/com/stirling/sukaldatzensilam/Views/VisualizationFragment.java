@@ -4,6 +4,7 @@
 
 package com.stirling.sukaldatzensilam.Views;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -20,6 +21,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -40,6 +43,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.libRG.CustomTextView;
 import com.stirling.sukaldatzensilam.Models.POJOs.RespuestaU;
 import com.stirling.sukaldatzensilam.R;
+import com.stirling.sukaldatzensilam.Utils.BluetoothLEHelper;
 import com.stirling.sukaldatzensilam.Utils.Constants;
 import com.stirling.sukaldatzensilam.Utils.ElasticSearchAPI;
 import com.stirling.sukaldatzensilam.Utils.Notifications;
@@ -83,7 +87,7 @@ public class VisualizationFragment extends Fragment {
     private Handler handler;
     private int minutosTemp = 0;
     private long millisCounter = 0;
-    private String macbt;
+    private String macbt = null;
     private boolean mScanning;
     Runnable runnable;
     private Handler mHandler;
@@ -95,10 +99,14 @@ public class VisualizationFragment extends Fragment {
     private boolean girado;
     private boolean lleno;
 
+    private boolean cambioConectado;
+    private boolean cambioDesconectado;
+
     BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     BluetoothGatt mBluetoothGatt;
     BluetoothDevice bDevice;
     BluetoothGattService gattServiceD;
+    BluetoothLEHelper bluetoothLEHelper;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private String charUUID = "f547a45c-5264-486a-b107-11db9099ded0"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
@@ -112,6 +120,7 @@ public class VisualizationFragment extends Fragment {
     private String queryJson = "";
     private JSONObject jsonObject;
     private String correoUsuario;
+    public Activity laActivity;
 
     /*Animation animRotar1;
     Animation animRotar3;
@@ -135,6 +144,7 @@ public class VisualizationFragment extends Fragment {
     @BindView(R.id.imgTupperLlenoFrio) ImageView tupperFrio;
     @BindView(R.id.imgTupperLlenoCaliente) ImageView tupperCaliente;
     @BindView(R.id.temperatureIndicator) CustomTextView tvTemperature;
+    private CountDownTimer countDownTimer;
 
     /**
      * Use this factory method to create a new instance of
@@ -160,6 +170,7 @@ public class VisualizationFragment extends Fragment {
                 Context.MODE_PRIVATE);
         t = 0;
         temp = 0;
+        laActivity = getActivity();
         //Inicializamos las animaciones y sus respectivos listerners
         /*animRotar1 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
                 R.anim.rotar1);
@@ -483,11 +494,15 @@ public class VisualizationFragment extends Fragment {
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
                     Log.i("BLEFrag", "STATE_CONNECTED");
-                    //BluetoothDevice device = gatt.getDevice(); // Get device
+                    cambioConectado = true;
                     gatt.discoverServices();
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
-                    //scanLeDevice(true);
+                    if (macbt != null && !isScanning() && bDevice==null) {
+                        scanLeDevice(true);
+                    }
+                    cambioDesconectado = true;
+                    tvTemperature.setText("-- ºC");
                     Log.e("BLEFrag", "STATE_DISCONNECTED");
                     break;
                 default:
@@ -665,6 +680,19 @@ public class VisualizationFragment extends Fragment {
         }
     };
 
+    private void toastConectado() {
+            if(cambioConectado){
+                Toast.makeText(laActivity, "Tupper CONECTADO", Toast.LENGTH_SHORT).show();
+                cambioConectado = false;
+            }
+            if (cambioDesconectado){
+                Toast.makeText(laActivity, "Tupper DESCONECTADO", Toast.LENGTH_SHORT).show();
+                cambioDesconectado = false;
+                temp = 0;
+                tvTemperature.setText("-- ºC");
+            }
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -678,7 +706,6 @@ public class VisualizationFragment extends Fragment {
         super.onViewCreated(view, savedInstancestate);
 
         ButterKnife.bind(this, view);
-
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
         //Inicializamos imágenes
@@ -701,6 +728,7 @@ public class VisualizationFragment extends Fragment {
                     alTAct = false;
                     temperatureThreshold.setText(Html.fromHtml("<b> </b>"));
                     bSetTemperatureAlarm.setText("Activar");
+                    countDownTimer.cancel();
                 }
             }
         });
@@ -731,8 +759,8 @@ public class VisualizationFragment extends Fragment {
                     timeAlarm.setText(Html.fromHtml(" "));
                     seekBarTime.setProgress(0);
                 }
-                timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
-                        seekBarTime.getProgress() + "min."));
+//                timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
+//                        seekBarTime.getProgress() + "min."));
 
             }
         });
@@ -745,16 +773,17 @@ public class VisualizationFragment extends Fragment {
         new Runnable() {
             @Override
             public void run() {
-                handler.postDelayed(this, 2 * 1000); // cada 3 segundos
+                handler.postDelayed(this, 2 * 1000); // cada 2 segundos
                 //lo que queremos que haga cada tres segundos
                 Log.i("info", "Loop de 3 segundos");
                 comprobarAlarmaT(alTAct);
                 actualizarTemperatura();
                 actualizarColor();
+                toastConectado();
                 verificarEstado();
-                if (macbt != null && !isScanning() && bDevice==null) {
-                    scanLeDevice(true);
-                }
+//                if (macbt != null && !isScanning() && bDevice==null) {
+//                    scanLeDevice(true);
+//                }
                 int l = 0;
                 int g = 0;
                 if(girado)
@@ -789,7 +818,9 @@ public class VisualizationFragment extends Fragment {
     public void actualizarTemperatura(){
         macbt = preferences.getString("macbt", null);
         tvTemperature.setText("-- ºC");
-        tvTemperature.setText(temp + " ºC");
+        if(temp != 0){
+            tvTemperature.setText(temp + " ºC");
+        }
     }
 
     /**
@@ -798,7 +829,7 @@ public class VisualizationFragment extends Fragment {
     public void arrancarTimer(){
         millisCounter = minutosTemp*60*1000; //Trabajamos con millisegundos
         mil = 0;
-        new unCountDown(millisCounter, 1000).start();
+        countDownTimer = new unCountDown(millisCounter, 1000).start();
     }
 
     /**
