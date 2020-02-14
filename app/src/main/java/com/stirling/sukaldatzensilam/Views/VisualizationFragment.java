@@ -144,6 +144,7 @@ public class VisualizationFragment extends Fragment {
     @BindView(R.id.imgTupperLlenoFrio) ImageView tupperFrio;
     @BindView(R.id.imgTupperLlenoCaliente) ImageView tupperCaliente;
     @BindView(R.id.temperatureIndicator) CustomTextView tvTemperature;
+    @BindView(R.id.imageBtConnect) ImageView imageBtConect;
     private CountDownTimer countDownTimer;
 
     /**
@@ -682,10 +683,12 @@ public class VisualizationFragment extends Fragment {
 
     private void toastConectado() {
             if(cambioConectado){
+                imageBtConect.setImageResource(R.drawable.ic_btconect);
                 Toast.makeText(laActivity, "Tupper CONECTADO", Toast.LENGTH_SHORT).show();
                 cambioConectado = false;
             }
             if (cambioDesconectado){
+                imageBtConect.setImageResource(R.drawable.ic_btdesconect);
                 Toast.makeText(laActivity, "Tupper DESCONECTADO", Toast.LENGTH_SHORT).show();
                 cambioDesconectado = false;
                 temp = 0;
@@ -706,6 +709,8 @@ public class VisualizationFragment extends Fragment {
         super.onViewCreated(view, savedInstancestate);
 
         ButterKnife.bind(this, view);
+//        imageBtConect.setImageResource(R.drawable.ic_btdesconect);
+
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
         //Inicializamos imágenes

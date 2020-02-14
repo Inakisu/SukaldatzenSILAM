@@ -308,4 +308,14 @@
         tools:layout_conversion_absoluteHeight="175dp"
         tools:layout_conversion_absoluteWidth="175dp" />
 
+    <ImageView
+        android:id="@+id/imageBtConnect"
+        android:layout_width="33dp"
+        android:layout_height="37dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/alarmLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_btdesconect" />
+
 </android.support.constraint.ConstraintLayout>
