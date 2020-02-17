@@ -17,6 +17,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -842,9 +843,16 @@ public class VisualizationFragment extends Fragment {
      */
     public void actualizarColor(){
 
-        int temp1 = getResources().getInteger(R.integer.tempVerdeMenorQue);
-        int temp2 = getResources().getInteger(R.integer.tempAmarillaMayVerMenQue);
-        int temp3 = getResources().getInteger(R.integer.tempRojaMayorQue);
+        int temp1 = 0;
+        int temp2 = 0;
+        int temp3 = 0;
+        try {
+            temp1 = getResources().getInteger(R.integer.tempVerdeMenorQue);
+            temp2 = getResources().getInteger(R.integer.tempAmarillaMayVerMenQue);
+            temp3 = getResources().getInteger(R.integer.tempRojaMayorQue);
+        } catch (Resources.NotFoundException e) {
+            e.printStackTrace();
+        }
         try {
             if (temp < temp1) {
                 tvTemperature.setBackgroundColor(getContext().getColor(R.color.tempAzul));
