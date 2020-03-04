@@ -199,8 +199,6 @@ public class BluetoothActivity extends AppCompatActivity {
         dispEncontrados.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //Si pulsamos un item de la lista, cancelamos la búsqueda
-                //adapter.cancelDiscovery();
                 //Detenemos la animación de la progressbar
                 progressBar2.setVisibility(View.GONE);
                 final String info = ((TextView) view).getText().toString();
@@ -209,7 +207,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 String dirMAC = info.substring(info.length()-17);
 
                 //Conectar al dispositivo
-                //BluetoothDevice device = adapter.getRemoteDevice(dirMAC);
                 for (BluetoothLE bte : arBLEEncont){
                     if(bte.getMacAddress().equals(dirMAC)){
                         selDevice = bte.getDevice();
@@ -218,13 +215,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
                 ble.connect(selDevice,bleCallback);
                 Log.i("Conectando con device","esto va después de ble.connect");
-                /*try {
-                    btsocket = device.createInsecureRfcommSocketToServiceRecord(my_UUID);
-                    btsocket.connect();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("----Catch del socket connection: " +e);
-                }*/
 
                 //Comprobamos conexión con el dispositivo
                 if(!checkIfBleIsConnected(ble)){

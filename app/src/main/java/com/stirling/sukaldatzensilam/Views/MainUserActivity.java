@@ -120,7 +120,6 @@ public  class MainUserActivity extends AppCompatActivity {
         openNewFragment(new VisualizationFragment(), "VisualizationFragment",
                 null, false);
         menu = navigationView.getMenu();
-//        modulos = menu.addSubMenu("Módulos");
     }
 
 

@@ -22,8 +22,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -32,9 +30,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -77,7 +72,6 @@ public class VisualizationFragment extends Fragment {
 
     SharedPreferences preferences;
     public List<BluetoothGattCharacteristic> listaChars = new ArrayList<>();
-    private int NUM_OF_COUNT;
     private boolean alTAct = false;
     private boolean seguir = false;
     private boolean rCorriendo = false;
@@ -93,10 +87,6 @@ public class VisualizationFragment extends Fragment {
     Runnable runnable;
     private Handler mHandler;
     private int t;
-    /*private boolean estabaGiradoVacio;
-    private boolean estabaAzul;
-    private boolean estabaRojo;
-    private boolean estabaVacio;*/
     private boolean girado;
     private boolean lleno;
 
@@ -107,7 +97,6 @@ public class VisualizationFragment extends Fragment {
     BluetoothGatt mBluetoothGatt;
     BluetoothDevice bDevice;
     BluetoothGattService gattServiceD;
-    BluetoothLEHelper bluetoothLEHelper;
 
     private static final int REQUEST_ENABLE_BT = 1;
     private String charUUID = "f547a45c-5264-486a-b107-11db9099ded0"; //"BEB5483E-36E1-4688-B7F5-EA07361B26A8";
@@ -122,14 +111,6 @@ public class VisualizationFragment extends Fragment {
     private JSONObject jsonObject;
     private String correoUsuario;
     public Activity laActivity;
-
-    /*Animation animRotar1;
-    Animation animRotar3;
-    Animation animFadeOut;
-    Animation animFadeIn;*/
-
-
-    int[] imageArray = { R.drawable.vacio, R.drawable.frio, R.drawable.caliente };
 
     @BindView(R.id.bSetAlarm) TextView bSetTemperatureAlarm;
     @BindView(R.id.temperatureThreshold) TextView temperatureThreshold;
@@ -173,198 +154,6 @@ public class VisualizationFragment extends Fragment {
         t = 0;
         temp = 0;
         laActivity = getActivity();
-        //Inicializamos las animaciones y sus respectivos listerners
-        /*animRotar1 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
-                R.anim.rotar1);
-        animRotar3 = AnimationUtils.loadAnimation(getActivity().getApplicationContext(),
-                R.anim.rotar3);
-        animRotar1.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                tupperVacio.setVisibility(View.VISIBLE);
-                tupperFrio.setVisibility(View.GONE);
-                tupperCaliente.setVisibility(View.GONE);
-                tupperVacioGirado.setVisibility(View.GONE);
-            }
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                tupperVacio.setVisibility(View.GONE);
-                tupperFrio.setVisibility(View.GONE);
-                tupperCaliente.setVisibility(View.GONE);
-                tupperVacioGirado.setVisibility(View.VISIBLE);
-            }
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        animRotar3.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                tupperVacio.setVisibility(View.GONE);
-                tupperFrio.setVisibility(View.GONE);
-                tupperCaliente.setVisibility(View.GONE);
-                tupperVacioGirado.setVisibility(View.VISIBLE);
-            }
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                tupperVacio.setVisibility(View.VISIBLE);
-                tupperFrio.setVisibility(View.GONE);
-                tupperCaliente.setVisibility(View.GONE);
-                tupperVacioGirado.setVisibility(View.GONE);
-            }
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        animFadeOut = new AlphaAnimation(1.0f, 0.0f);
-        animFadeOut.setDuration(900);
-        animFadeOut.setRepeatCount(0); //sólo quiero que se ejecute una vez, así que 0 ¿?
-        animFadeOut.setRepeatMode(Animation.REVERSE);
-        animFadeOut.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                if(estabaGiradoVacio){
-                    tupperVacio.setVisibility(View.VISIBLE);
-                }else if(estabaAzul) {
-
-                }else if (estabaRojo){
-                    tupperCaliente.setVisibility(View.GONE);
-                }
-            }
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                if(!girado){ //no está girado
-                    if(estabaGiradoVacio){
-                    }else if (estabaAzul){
-                    }else if (estabaRojo){
-                    }else if (estabaVacio){
-                        //nada
-                    }
-                }else if(girado && !lleno){ //girado y vacío
-                    if(estabaGiradoVacio){
-                        //nada
-                    }else if (estabaAzul){
-                        tupperFrio.setVisibility(View.GONE);
-                        estabaAzul = false;
-                    }else if (estabaRojo){
-                        tupperCaliente.setVisibility(View.GONE);
-                    }else if (estabaVacio){
-                    }
-                }else if(girado && lleno && temp < 23){ //girado, lleno y frío
-                    if(estabaGiradoVacio){
-                        tupperVacio.setVisibility(View.GONE);
-                    }else if (estabaAzul){
-                        //nada
-                    }else if (estabaRojo){
-                        tupperCaliente.setVisibility(View.GONE);
-                        estabaRojo = false;
-                   }else if (estabaVacio){
-                        //hacer visible azul
-                    }
-                }else if(girado && lleno && temp > 23){//girado, lleno y caliente
-                    if(estabaGiradoVacio){
-                    }else if (estabaAzul){
-                    }else if (estabaRojo){
-                        //nada
-                    }else if (estabaVacio){
-                    }
-                }
-
-
-               *//* if(estabaGiradoVacio){
-                    tupperVacio.setVisibility(View.GONE);
-                    tupperCaliente.setVisibility(View.GONE);
-                }else if (estabaRojo){
-                    tupperVacio.setVisibility(View.GONE);
-                    tupperCaliente.setVisibility(View.GONE);
-                }else if (estabaAzul){
-                    tupperFrio.setVisibility(View.GONE);
-                    tupperCaliente.setVisibility(View.GONE);
-                }*//*
-            }
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        animFadeIn = new AlphaAnimation(0.0f, 1.0f);
-        animFadeIn.setDuration(900);
-        animFadeIn.setRepeatCount(0); //lo mismo que el de out
-        animFadeIn.setRepeatMode(Animation.REVERSE);
-        animFadeIn.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                if(girado && !lleno){ //girado y vacío
-                    if(estabaGiradoVacio){
-                        //nada
-                    }else if (estabaAzul){
-                        tupperVacio.setVisibility(View.VISIBLE);
-                    }else if (estabaRojo){
-                        tupperVacio.setVisibility(View.VISIBLE);
-                    }
-                }else if(girado && lleno && temp < 23){ //girado, lleno y frío
-                    if(estabaGiradoVacio){
-                        tupperFrio.setVisibility(View.VISIBLE);
-                    }else if (estabaAzul){
-                        //nada
-                    }else if (estabaRojo){
-                    }else if (estabaVacio){
-                        tupperFrio.setVisibility(View.VISIBLE);
-                    }
-                }else if(girado && lleno && temp > 23){//girado, lleno y caliente
-                    if(estabaGiradoVacio){
-
-                    }else if (estabaAzul){
-
-                    }else if (estabaRojo){
-                        //nada
-                    }
-                }
-            }
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                if(girado && !lleno){ //girado y vacío
-                    if(estabaGiradoVacio){
-                        //nada
-                    }else if (estabaAzul){
-                        tupperFrio.startAnimation(animFadeOut);
-                    }else if (estabaRojo){
-                        estabaRojo = false;
-                    }else if (estabaVacio){
-
-                    }
-                }else if(girado && lleno && temp < 23){ //girado, lleno y frío
-                    if(estabaGiradoVacio){
-                        estabaAzul = true;
-                        estabaGiradoVacio = false;
-                    }else if (estabaAzul){
-                        //nada
-                    }else if (estabaRojo){
-
-                    }else if (estabaVacio){
-
-                        estabaVacio = false;
-                    }
-                }else if(girado && lleno && temp > 23){//girado, lleno y caliente
-                    if(estabaGiradoVacio){
-
-                    }else if (estabaAzul){
-
-                    }else if (estabaRojo){
-                        //nada
-                    }else if (estabaVacio){
-                    }
-                }
-            }
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });*/
-
-        //Obtenemos dirección mac desde shared preferences
         macbt = preferences.getString("macbt", null);
         //Inicializar API
         inicializarAPI();
@@ -525,81 +314,9 @@ public class VisualizationFragment extends Fragment {
             characLleno = gattServiceD.getCharacteristic(UUID.fromString(charUUID2));
             characGiro = gattServiceD.getCharacteristic(UUID.fromString(charUUID3));
             characTemp = gattServiceD.getCharacteristic(UUID.fromString(charUUID));
-             listaChars.add(characTemp);
-             listaChars.add(characGiro);
-             listaChars.add(characLleno);
-
-            /*switch (t){
-                case 0:
-                    try{
-                        Log.i("read","characGiro");
-                        gatt.readCharacteristic(characGiro);
-                        try {
-                            Thread.sleep(500);
-                        }catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //gatt.setCharacteristicNotification(characGiro, true);
-                        try {
-                            Thread.sleep(600);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            Log.e("onServDiscFrag", "Error sleep: "+ e);
-                        }
-                    }catch (Exception e){
-                        Log.e("readFrag", "Error: " + e);
-                    }
-                    t++;
-                    break;
-                case 1:
-                    try{
-                        Log.i("read","characTemp");
-                        gatt.readCharacteristic(characTemp);
-                        try {
-                            Thread.sleep(500);
-                        }catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        gatt.setCharacteristicNotification(characTemp, true);
-                        try {
-                            Thread.sleep(600);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            Log.e("onServDiscFrag", "Error sleep: "+ e);
-                        }
-                    }catch (Exception e){
-                        Log.e("readFrag", "Error: " + e);
-                    }
-                    break;
-                case 2:
-                    try{
-                        Log.i("read","characLleno");
-                        gatt.readCharacteristic(characLleno);
-                        try {
-                            Thread.sleep(500);
-                        }catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        //gatt.setCharacteristicNotification(characLleno, true);
-                        try {
-                            Thread.sleep(600);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            Log.e("onServDiscFrag", "Error sleep: "+ e);
-                        }
-                    }catch (Exception e){
-                        Log.e("readFrag", "Error: " + e);
-                    }
-                    break;
-                case 3:
-                    t=0;
-                    break;
-            }*/
-
-            //Añadimos las características a la lista
-            /*listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID2)));
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));*/
+            listaChars.add(characTemp);
+            listaChars.add(characGiro);
+            listaChars.add(characLleno);
 
             requestCharacteristics(gatt);
 
@@ -666,17 +383,8 @@ public class VisualizationFragment extends Fragment {
         public synchronized void onCharacteristicChanged(BluetoothGatt gatt,
                                                          BluetoothGattCharacteristic characteristic) {
 
-            /*listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID)));
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID2)));
-            listaChars.add(gattServiceD.getCharacteristic(UUID.fromString(charUUID3)));
-
-            requestCharacteristics(gatt);*/
-
             Log.i("infoFrag", "onCharacteristicChanged");
             gatt.discoverServices();
-            //tempString = characteristic.getStringValue(0);
-            //temp = 0;
-            //temp = Integer.parseInt(tempString);
             Log.i("BLEFragOnCharChanged", "Characteristic: " + tempString);
 
         }
@@ -710,7 +418,6 @@ public class VisualizationFragment extends Fragment {
         super.onViewCreated(view, savedInstancestate);
 
         ButterKnife.bind(this, view);
-//        imageBtConect.setImageResource(R.drawable.ic_btdesconect);
 
         //Limpiar temperatura anterior
         tvTemperature.setText("-- ºC");
@@ -765,9 +472,6 @@ public class VisualizationFragment extends Fragment {
                     timeAlarm.setText(Html.fromHtml(" "));
                     seekBarTime.setProgress(0);
                 }
-//                timeAlarm.setText(Html.fromHtml("<b>Tiempo restante:</b> " +
-//                        seekBarTime.getProgress() + "min."));
-
             }
         });
 
@@ -787,9 +491,6 @@ public class VisualizationFragment extends Fragment {
                 actualizarColor();
                 toastConectado();
                 verificarEstado();
-//                if (macbt != null && !isScanning() && bDevice==null) {
-//                    scanLeDevice(true);
-//                }
                 int l = 0;
                 int g = 0;
                 if(girado)

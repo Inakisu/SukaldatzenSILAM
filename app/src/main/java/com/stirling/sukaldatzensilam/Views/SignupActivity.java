@@ -270,8 +270,6 @@ public class SignupActivity extends AppCompatActivity {
             //No hay permisos, hay que pedirlos
             Log.e("Location", "No hay permisos de localización.1");
             System.out.println(" %%%% Return 1 - No permisos localización %%%%");
-//            return;
-//            showSettingsAlert();
         }
     }
 
@@ -325,7 +323,6 @@ public class SignupActivity extends AppCompatActivity {
         HashMap<String, String> headerMap = new HashMap<String, String>();
         headerMap.put("Authorization", Credentials.basic("android",
                 mElasticSearchPassword));
-        String searchString = "";
         try {
             //Este es el JSON en el que especificamos los parámetros de la búsqueda
             queryJson = "{\n" +
