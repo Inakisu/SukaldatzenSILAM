@@ -70,7 +70,6 @@ public class ResetPasswordActivity extends AppCompatActivity {
                                             "Failed to send reset email!",
                                             Toast.LENGTH_SHORT).show();
                                 }
-
                                 progressBar.setVisibility(View.GONE);
                             }
                         });

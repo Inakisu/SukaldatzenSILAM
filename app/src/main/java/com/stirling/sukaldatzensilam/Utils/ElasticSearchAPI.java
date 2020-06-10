@@ -22,7 +22,7 @@ public interface ElasticSearchAPI {
     Call<RespuestaU> postUserReg(@HeaderMap Map<String, String> headers,
                                  @Body RequestBody params);
 
-    //Llamada para introducir una cazuela nueva en la base de datos
+    //Llamada para introducir una entrada nueva en la base de datos
     @POST("/silam_dispositivos/_doc")
     Call<RespuestaU> postTupper(@HeaderMap Map<String, String> headers,
                                   @Body RequestBody params);

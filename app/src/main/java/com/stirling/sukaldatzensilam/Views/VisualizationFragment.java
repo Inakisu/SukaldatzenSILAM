@@ -329,33 +329,19 @@ public class VisualizationFragment extends Fragment {
 
             if(characteristic.getUuid().toString().equals(charUUID)){
                 Log.i("onCharRead","charUUID === BBBBB");
-                // my attempt to read and print characteristics
-//                Log.i("infoFrag", "onCharacteristicRead");
                 tempString = characteristic.getStringValue(0);
-                //temp = 0;
                 temp = Integer.parseInt(tempString);
                 Log.i("BLEFragOnCharRead", "Characteristic: " + tempString); //dataInput
-                //gatt.disconnect();
             }else if(characteristic.getUuid().toString().equals(charUUID2)){
                 Log.i("onCharRead","charUUID2 === BBBBB");
 
-                if(characteristic.getStringValue(0).equals("1")){
-                    lleno = true;
-                }else{
-                    lleno = false;
-                }
+                lleno = characteristic.getStringValue(0).equals("1");
                 Log.i("BLEFragOnCharRead", "Characteristic: " + characteristic.getStringValue(0)); //dataInput
 
             }else if(characteristic.getUuid().toString().equals(charUUID3)){
                 Log.i("onCharRead","charUUID3 === BBBBB");
-
-                if(characteristic.getStringValue(0).equals("1")){
-                    girado = true;
-                }else{
-                    girado = false;
-                }
+                girado = characteristic.getStringValue(0).equals("1");
                 Log.i("BLEFragOnCharRead", "Characteristic: " + characteristic.getStringValue(0)); //dataInput
-
             }else{
                 Log.e("BLE Read: ","Ninguna característica coincide con el UUID " +
                         "proporcionado");
